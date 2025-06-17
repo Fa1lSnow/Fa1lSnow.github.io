@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617132301524.png">
 <meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250617132309935.png">
 <meta property="article:published_time" content="2025-06-17T05:19:54.000Z">
-<meta property="article:modified_time" content="2025-06-17T05:25:08.053Z">
+<meta property="article:modified_time" content="2025-06-17T05:26:11.860Z">
 <meta property="article:author" content="Fa1lSnow">
 <meta property="article:tag" content="heap">
 <meta property="article:tag" content="Unsorted Bin">
@@ -218,7 +218,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2025-06-17 13:19:54 / Modified: 13:25:08" itemprop="dateCreated datePublished" datetime="2025-06-17T13:19:54+08:00">2025-06-17</time>
+      <time title="Created: 2025-06-17 13:19:54 / Modified: 13:26:11" itemprop="dateCreated datePublished" datetime="2025-06-17T13:19:54+08:00">2025-06-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -255,7 +255,7 @@
 <p>我们通过gdb来调试一下这个程序<br>先来看看正常free后，Unsorted Bin中的情况</p>
 <p><img src="C:/Users/Fa1lSnow/AppData/Roaming/Typora/typora-user-images/image-20250617132250048.png" alt="image-20250617132250048"><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617132250078.png" alt="image-20250617132250048"><br>在来看一看修改后的情况</p>
 <p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617132301524.png" alt="image-20250617132301490"><br>此时，目标地址+0x10的位置还是 0，我们执行malloc，触发 Unsorted Bin Attack 后看看这个位置</p>
-<p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617132309935.png" alt="image-20250617132309903"><br>可以看到，这个位置成功被我们修改成了 **main_arena + 88 **</p>
+<p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250617132309935.png" alt="image-20250617132309903"><br>可以看到，这个位置成功被我们修改成了 <strong>main_arena + 88</strong></p>
 <p>至此，我们便完成了 Unsorted Bin Attack</p>
 
     </div>
