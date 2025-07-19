@@ -19,12 +19,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="1234567title: House Of Orangedate: 2025-6-17 13:04:54categories:- PWNtags:- heap- House Of Orange    House Of OrangeHouse Of Orange 简介该利用方式是最早的一种 IO 利用方式之一，适用条件为glibc 2.23，开启了堆与 IO 组合利用的先河。 当程序中没有free">
+    <meta name="description" content="House Of OrangeHouse Of Orange 简介该利用方式是最早的一种 IO 利用方式之一，适用条件为glibc 2.23，开启了堆与 IO 组合利用的先河。 当程序中没有free的情况下，利用溢出覆盖Topchunk，然后申请大于topchunk的堆块，这个时候就会把原来的topchunk放入unsorted bin，后续通过 **Unsorted Bin Attack +">
 <meta property="og:type" content="article">
-<meta property="og:title" content="PWN好难学">
-<meta property="og:url" content="http://example.com/2025/07/19/House_of_Orange/index.html">
+<meta property="og:title" content="House Of Orange">
+<meta property="og:url" content="http://example.com/2025/06/17/House_of_Orange/index.html">
 <meta property="og:site_name" content="PWN好难学">
-<meta property="og:description" content="1234567title: House Of Orangedate: 2025-6-17 13:04:54categories:- PWNtags:- heap- House Of Orange    House Of OrangeHouse Of Orange 简介该利用方式是最早的一种 IO 利用方式之一，适用条件为glibc 2.23，开启了堆与 IO 组合利用的先河。 当程序中没有free">
+<meta property="og:description" content="House Of OrangeHouse Of Orange 简介该利用方式是最早的一种 IO 利用方式之一，适用条件为glibc 2.23，开启了堆与 IO 组合利用的先河。 当程序中没有free的情况下，利用溢出覆盖Topchunk，然后申请大于topchunk的堆块，这个时候就会把原来的topchunk放入unsorted bin，后续通过 **Unsorted Bin Attack +">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250716224252645.png">
 <meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250717165306240.png">
@@ -32,20 +32,22 @@
 <meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250719141304519.png">
 <meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250719142409632.png">
 <meta property="og:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250719143234598.png">
-<meta property="article:published_time" content="2025-07-19T07:23:38.235Z">
-<meta property="article:modified_time" content="2025-07-19T07:22:54.876Z">
+<meta property="article:published_time" content="2025-06-17T05:04:54.000Z">
+<meta property="article:modified_time" content="2025-07-19T07:27:11.803Z">
 <meta property="article:author" content="Fa1lSnow">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="House Of Orange">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://gitee.com/Fa1lSnow/pic/raw/master/20250716224252645.png">
 
 
-<link rel="canonical" href="http://example.com/2025/07/19/House_of_Orange/">
+<link rel="canonical" href="http://example.com/2025/06/17/House_of_Orange/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2025/07/19/House_of_Orange/","path":"2025/07/19/House_of_Orange/","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2025/06/17/House_of_Orange/","path":"2025/06/17/House_of_Orange/","title":"House Of Orange"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title> | PWN好难学</title>
+<title>House Of Orange | PWN好难学</title>
   
 
 
@@ -161,7 +163,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -188,7 +190,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2025/07/19/House_of_Orange/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/17/House_of_Orange/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/uploads/avatar.jpg">
@@ -201,12 +203,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | PWN好难学">
+      <meta itemprop="name" content="House Of Orange | PWN好难学">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
+          House Of Orange
         </h1>
 
         <div class="post-meta-container">
@@ -216,9 +218,24 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2025-07-19 15:23:38 / Modified: 15:22:54" itemprop="dateCreated datePublished" datetime="2025-07-19T15:23:38+08:00">2025-07-19</time>
+      <time title="Created: 2025-06-17 13:04:54" itemprop="dateCreated datePublished" datetime="2025-06-17T13:04:54+08:00">2025-06-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2025-07-19 15:27:11" itemprop="dateModified" datetime="2025-07-19T15:27:11+08:00">2025-07-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PWN/" itemprop="url" rel="index"><span itemprop="name">PWN</span></a>
+        </span>
     </span>
 
   
@@ -230,9 +247,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">title: House Of Orange</span><br><span class="line">date: 2025-6-17 13:04:54</span><br><span class="line">categories:</span><br><span class="line">- PWN</span><br><span class="line">tags:</span><br><span class="line">- heap</span><br><span class="line">- House Of Orange</span><br></pre></td></tr></table></figure>
-
-<meta name="referrer" content="no-referrer" />
+    <div class="post-body" itemprop="articleBody"><meta name="referrer" content="no-referrer" />
 
 <h1 id="House-Of-Orange"><a href="#House-Of-Orange" class="headerlink" title="House Of Orange"></a>House Of Orange</h1><h2 id="House-Of-Orange-简介"><a href="#House-Of-Orange-简介" class="headerlink" title="House Of Orange 简介"></a>House Of Orange 简介</h2><p>该利用方式是最早的一种 IO 利用方式之一，<strong>适用条件为glibc 2.23</strong>，开启了堆与 IO 组合利用的先河。</p>
 <p>当程序中没有free的情况下，利用<strong>溢出覆盖Topchunk</strong>，然后申请<strong>大于topchunk的堆块</strong>，这个时候就会<strong>把原来的topchunk放入unsorted bin</strong>，后续通过 **Unsorted Bin Attack + FSOP **进行攻击。</p>
@@ -331,16 +346,23 @@
     
 
     <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/heap/" rel="tag"># heap</a>
+              <a href="/tags/House-Of-Orange/" rel="tag"># House Of Orange</a>
+          </div>
 
         
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2025/06/17/unsorterbin%20attack/" rel="prev" title="Unsorted Bin Attack">
-                  <i class="fa fa-angle-left"></i> Unsorted Bin Attack
+                <a href="/2025/06/17/LargeBinAttack/" rel="prev" title="LargeBinAttack高低版本的利用">
+                  <i class="fa fa-angle-left"></i> LargeBinAttack高低版本的利用
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2025/06/17/fmt%E5%88%9D%E8%AF%86/" rel="next" title="格式化字符串漏洞">
+                  格式化字符串漏洞 <i class="fa fa-angle-right"></i>
+                </a>
             </div>
           </div>
     </footer>
